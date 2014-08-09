@@ -1,25 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
 import           BasePrelude
-import qualified Data.Map as M
-import           Data.Text (Text)
 import           Control.Concurrent
 import           Control.Monad.IO.Class (liftIO)
+import           Data.Map (Map)
+import qualified Data.Map as M
+import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-
 import qualified Network.WebSockets as WS
 
-broadcast :: Text -> Text -> M.Map k WS.Connection -> IO ()
+broadcast :: Text -> Text -> Map k WS.Connection -> IO ()
 broadcast user msg toUsers = do
   let line = user <> ": " <> msg
   T.putStrLn line
   forM_ (M.elems toUsers) (\conn -> WS.sendTextData conn line)
 
-newDB :: M.Map Text WS.Connection
+newDB :: Map Text WS.Connection
 newDB = M.empty
 
 application
-  :: Text -> WS.Connection -> MVar (M.Map Text WS.Connection) -> IO ()
+  :: Text -> WS.Connection -> MVar (Map Text WS.Connection) -> IO ()
 application email conn db = do
   liftIO setup
   finally talk disconnect
