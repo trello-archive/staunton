@@ -7,6 +7,7 @@
 //
 
 #import "STNAppDelegate.h"
+#import "STNHomeViewController.h"
 
 @implementation STNAppDelegate
 
@@ -16,6 +17,10 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+
+    UIViewController *controller = [[STNHomeViewController alloc] init];
+    self.window.rootViewController = controller;
+    
     return YES;
 }
 
