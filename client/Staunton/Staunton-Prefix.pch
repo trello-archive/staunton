@@ -15,4 +15,6 @@
     #import <Foundation/Foundation.h>
     #import <UIView+Helpers.h>
     #import <ReactiveCocoa.h>
+    #import <UIImageView+KHGravatar.h>
+    #import <RACEXTScope.h>
 #endif

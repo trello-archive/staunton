@@ -2,4 +2,6 @@
 
 @interface STNChessBoardViewController : UIViewController
 
+- (instancetype)initWithDiffsSignal:(RACSignal *)diffsSignal;
+
 @end
