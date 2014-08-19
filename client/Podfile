@@ -1,5 +1,8 @@
 platform :ios, '7.0'
 
 xcodeproj 'Staunton'
+
+pod 'KHGravatar'
+pod 'KHGravatar/AFNetworking'
 pod 'ReactiveCocoa'
 pod 'UIView+Helpers'
