@@ -30,3 +30,9 @@
 #define COCOAPODS_VERSION_MINOR_ReactiveCocoa_no_arc 3
 #define COCOAPODS_VERSION_PATCH_ReactiveCocoa_no_arc 1
 
+// UIView+Helpers
+#define COCOAPODS_POD_AVAILABLE_UIView_Helpers
+#define COCOAPODS_VERSION_MAJOR_UIView_Helpers 1
+#define COCOAPODS_VERSION_MINOR_UIView_Helpers 4
+#define COCOAPODS_VERSION_PATCH_UIView_Helpers 0
+

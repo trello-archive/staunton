@@ -6,11 +6,14 @@ PODS:
   - ReactiveCocoa/no-arc (2.3.1)
   - ReactiveCocoa/UI (2.3.1):
     - ReactiveCocoa/Core
+  - UIView+Helpers (1.4.0)
 
 DEPENDENCIES:
   - ReactiveCocoa
+  - UIView+Helpers
 
 SPEC CHECKSUMS:
   ReactiveCocoa: dca75777b9d18990c8714a3a6f2149f29b4d1462
+  UIView+Helpers: 4815f365dc4dd9b677a0ab4538a9abf806e56bcf
 
 COCOAPODS: 0.33.1
