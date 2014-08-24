@@ -16,6 +16,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     RACSubject *diffsSignal = [RACSubject subject];
     self.boardController = [[STNChessBoardViewController alloc] initWithDiffsSignal:diffsSignal];
 
