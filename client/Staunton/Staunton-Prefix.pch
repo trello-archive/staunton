@@ -17,4 +17,5 @@
     #import <ReactiveCocoa.h>
     #import <UIImageView+KHGravatar.h>
     #import <RACEXTScope.h>
+    #import "STNHelpers.h"
 #endif
