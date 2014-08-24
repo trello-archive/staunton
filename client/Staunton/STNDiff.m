@@ -21,12 +21,28 @@
     NSParameterAssert(@"abstract method");
 }
 
+- (BOOL)isInsert {
+    return NO;
+}
+
+- (BOOL)isUpdate {
+    return NO;
+}
+
+- (BOOL)isRemove {
+    return NO;
+}
+
 @end
 
 @implementation STNDiffInsert
 
 - (void)visitWithInsertBlock:(void (^)(STNDiffInsert *))insertBlock removeBlock:(void (^)(STNDiffRemove *))removeBlock updateBlock:(void (^)(STNDiffUpdate *))updateBlock {
     insertBlock(self);
+}
+
+- (BOOL)isInsert {
+    return YES;
 }
 
 @end
@@ -37,12 +53,20 @@
     removeBlock(self);
 }
 
+- (BOOL)isRemove {
+    return YES;
+}
+
 @end
 
 @implementation STNDiffUpdate
 
 - (void)visitWithInsertBlock:(void (^)(STNDiffInsert *))insertBlock removeBlock:(void (^)(STNDiffRemove *))removeBlock updateBlock:(void (^)(STNDiffUpdate *))updateBlock {
     updateBlock(self);
+}
+
+- (BOOL)isUpdate {
+    return YES;
 }
 
 @end
