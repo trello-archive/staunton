@@ -10,34 +10,29 @@
 
 @implementation STNHomeViewController
 
-- (void )loadView {
-    UIView *view = [UIView new];
-    self.view = view;
-}
-
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    RACSubject *diffsSignal = [RACSubject subject];
-    self.boardController = [[STNChessBoardViewController alloc] initWithDiffsSignal:diffsSignal];
-
+    RACSignal *diffSignal = [self fakeDiffSignal];
+    self.boardController = [[STNChessBoardViewController alloc] initWithDiffSignal:diffSignal];
+    
     CGFloat side = MIN(self.view.frameSizeHeight, self.view.frameSizeWidth);
     self.boardController.view.frame = CGRectMake(0, 0, side, side);
     [self.view addSubview:self.boardController.view];
     [self.boardController didMoveToParentViewController:self];
-
-    [self sendFakeDataTo:diffsSignal];
 }
 
-- (void)sendFakeDataTo:(RACSubject *)diffsSignal {
+- (RACSignal *)fakeDiffSignal {
     NSString *hao = @"me@haolian.org";
     NSString *ian = @"ianthehenry@gmail.com";
-    [diffsSignal sendNext:[[STNDiffInsert alloc] initWithEmail:hao point:CGPointMake(100, 100)]];
-    [diffsSignal sendNext:[[STNDiffInsert alloc] initWithEmail:ian point:CGPointMake(150, 150)]];
-    [[RACSignal interval:2 onScheduler:[RACScheduler mainThreadScheduler]] subscribeNext:^(id x) {
+    
+    return [[[@[[[STNDiffInsert alloc] initWithEmail:hao point:CGPointMake(0.5, 0.25)],
+                [[STNDiffInsert alloc] initWithEmail:ian point:CGPointMake(0.5, 0.75)]]
+              rac_sequence] signal]
+            concat: [[RACSignal interval:2 onScheduler:[RACScheduler mainThreadScheduler]] map:^(id x) {
         NSString *email = arc4random_uniform(2) ? hao : ian;
-        CGPoint point = CGPointMake(arc4random_uniform(self.boardController.view.frameSizeWidth), arc4random_uniform(self.boardController.view.frameSizeHeight));
-        [diffsSignal sendNext:[[STNDiffUpdate alloc] initWithEmail:email point:point]];
-    }];
+        CGPoint point = CGPointMake(randfloat(), randfloat());
+        return [[STNDiffUpdate alloc] initWithEmail:email point:point];
+    }]];
 }
 
 @end

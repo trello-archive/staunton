@@ -4,17 +4,12 @@
 
 @interface STNChessBoardViewController ()
 
-@property (strong, nonatomic) NSMutableDictionary *gravatarViewsByEmail;
-@property (strong, nonatomic) RACSignal *diffsSignal;
+@property (strong, nonatomic) RACSignal *diffSignal;
 
 @end
 
-@implementation STNChessBoardViewController
-
-static const NSUInteger gravatarSide = 32;
-
-+ (UIImageView *)makeGravatarViewWithFrame:(CGRect)frame {
-    UIImageView *view = [[UIImageView alloc] initWithFrame:frame];
+static UIImageView *makeGravatarView(CGFloat size) {
+    UIImageView *view = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size, size)];
     UIBezierPath *shadowPath = [UIBezierPath bezierPathWithRect:view.bounds];
     view.layer.masksToBounds = NO;
     view.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -24,10 +19,11 @@ static const NSUInteger gravatarSide = 32;
     return view;
 }
 
-- (instancetype)initWithDiffsSignal:(RACSignal *)diffsSignal {
+@implementation STNChessBoardViewController
+
+- (instancetype)initWithDiffSignal:(RACSignal *)diffSignal {
     if (self = [super init]) {
-        self.gravatarViewsByEmail = [NSMutableDictionary dictionary];
-        self.diffsSignal = diffsSignal;
+        self.diffSignal = diffSignal;
     }
     return self;
 }
@@ -36,26 +32,42 @@ static const NSUInteger gravatarSide = 32;
     self.view = [[STNChessBoardView alloc] init];
 }
 
-- (void)viewDidLoad {
-    @weakify(self);
+- (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
+    return [RACSignal combineLatest:@[RACObserve(self.view, bounds),
+                                      positionSignal]
+                             reduce:^(NSValue *boundsValue, NSValue *positionValue) {
+                                 CGRect bounds = [boundsValue CGRectValue];
+                                 CGPoint position = [positionValue CGPointValue];
+                                 return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
+                                                                              bounds.size.height * position.y)];
+                             }];
+}
 
-    [self.diffsSignal subscribeNext:^(STNDiff *diff) {
+- (void)handleDiffs:(RACSignal *)diffs forEmail:(NSString *)email {
+    RACSignal *positionSignal = [[diffs takeWhileBlock:^BOOL(STNDiff *diff) {
+        return !diff.isRemove;
+    }] map:^(STNDiff *diff) {
+        return [NSValue valueWithCGPoint:diff.point];
+    }];
+    
+    UIImageView *gravatarView = makeGravatarView(32.0f);
+    [gravatarView setImageWithGravatarEmailAddress:email];
+    [self.view addSubview:gravatarView];
+    RAC(gravatarView, center) = [self centerForPosition:positionSignal];
+    [positionSignal subscribeCompleted:^{
+        [gravatarView removeFromSuperview];
+    }];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    @weakify(self);
+    [[self.diffSignal groupBy:^(STNDiff *diff) {
+        return diff.email;
+    }] subscribeNext:^(RACGroupedSignal *perUserDiffs) {
         @strongify(self);
-        [diff visitWithInsertBlock:^(STNDiffInsert *insert) {
-            UIImageView *gravatarView = [self.class makeGravatarViewWithFrame:CGRectMake(insert.point.x, insert.point.y, gravatarSide, gravatarSide)];
-            [gravatarView setImageWithGravatarEmailAddress:insert.email];
-            [self.view addSubview:gravatarView];
-            self.gravatarViewsByEmail[insert.email] = gravatarView;
-        } removeBlock:^(STNDiffRemove *remove) {
-            UIImageView *gravatarView = self.gravatarViewsByEmail[remove.email];
-            NSParameterAssert(gravatarView);
-            [gravatarView removeFromSuperview];
-            [self.gravatarViewsByEmail removeObjectForKey:gravatarView];
-        } updateBlock:^(STNDiffUpdate *update) {
-            UIImageView *gravatarView = self.gravatarViewsByEmail[update.email];
-            NSParameterAssert(gravatarView);
-            gravatarView.frameOrigin = update.point;
-        }];
+        [self handleDiffs:perUserDiffs forEmail:(NSString *)perUserDiffs.key];
     }];
 }
 
