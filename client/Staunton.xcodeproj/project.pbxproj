@@ -16,24 +16,11 @@
 		3F0A13CE19A375F400D98CC7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F0A13CD19A375F400D98CC7 /* main.m */; };
 		3F0A13D219A375F400D98CC7 /* STNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F0A13D119A375F400D98CC7 /* STNAppDelegate.m */; };
 		3F0A13D419A375F400D98CC7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F0A13D319A375F400D98CC7 /* Images.xcassets */; };
-		3F0A13DB19A375F400D98CC7 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13DA19A375F400D98CC7 /* XCTest.framework */; };
-		3F0A13DC19A375F400D98CC7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C119A375F400D98CC7 /* Foundation.framework */; };
-		3F0A13DD19A375F400D98CC7 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C519A375F400D98CC7 /* UIKit.framework */; };
 		3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */; };
 		3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */; };
 		3F9FD57B19A37A85001A5EDD /* STNChessBoardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */; };
 		46274014C7304A7389E700C3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 740ECFD7EAF1411B8C120E31 /* libPods.a */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		3F0A13DE19A375F400D98CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3F0A13B619A375F400D98CC7 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3F0A13BD19A375F400D98CC7;
-			remoteInfo = Staunton;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		3CAF393519AA8A2B005BCEE7 /* STNDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNDiff.h; sourceTree = "<group>"; };
@@ -51,7 +38,6 @@
 		3F0A13D019A375F400D98CC7 /* STNAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STNAppDelegate.h; sourceTree = "<group>"; };
 		3F0A13D119A375F400D98CC7 /* STNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STNAppDelegate.m; sourceTree = "<group>"; };
 		3F0A13D319A375F400D98CC7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		3F0A13D919A375F400D98CC7 /* StauntonTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StauntonTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F0A13DA19A375F400D98CC7 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		3F81210419A3779C00FA6DF7 /* STNHomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNHomeViewController.h; sourceTree = "<group>"; };
 		3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNHomeViewController.m; sourceTree = "<group>"; };
@@ -75,16 +61,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3F0A13D619A375F400D98CC7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				3F0A13DB19A375F400D98CC7 /* XCTest.framework in Frameworks */,
-				3F0A13DD19A375F400D98CC7 /* UIKit.framework in Frameworks */,
-				3F0A13DC19A375F400D98CC7 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -102,7 +78,6 @@
 			isa = PBXGroup;
 			children = (
 				3F0A13BE19A375F400D98CC7 /* Staunton.app */,
-				3F0A13D919A375F400D98CC7 /* StauntonTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -197,24 +172,6 @@
 			productReference = 3F0A13BE19A375F400D98CC7 /* Staunton.app */;
 			productType = "com.apple.product-type.application";
 		};
-		3F0A13D819A375F400D98CC7 /* StauntonTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 3F0A13ED19A375F400D98CC7 /* Build configuration list for PBXNativeTarget "StauntonTests" */;
-			buildPhases = (
-				3F0A13D519A375F400D98CC7 /* Sources */,
-				3F0A13D619A375F400D98CC7 /* Frameworks */,
-				3F0A13D719A375F400D98CC7 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				3F0A13DF19A375F400D98CC7 /* PBXTargetDependency */,
-			);
-			name = StauntonTests;
-			productName = StauntonTests;
-			productReference = 3F0A13D919A375F400D98CC7 /* StauntonTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -224,11 +181,6 @@
 				CLASSPREFIX = STN;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = trello;
-				TargetAttributes = {
-					3F0A13D819A375F400D98CC7 = {
-						TestTargetID = 3F0A13BD19A375F400D98CC7;
-					};
-				};
 			};
 			buildConfigurationList = 3F0A13B919A375F400D98CC7 /* Build configuration list for PBXProject "Staunton" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -243,7 +195,6 @@
 			projectRoot = "";
 			targets = (
 				3F0A13BD19A375F400D98CC7 /* Staunton */,
-				3F0A13D819A375F400D98CC7 /* StauntonTests */,
 			);
 		};
 /* End PBXProject section */
@@ -255,13 +206,6 @@
 			files = (
 				3F0A13CC19A375F400D98CC7 /* InfoPlist.strings in Resources */,
 				3F0A13D419A375F400D98CC7 /* Images.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3F0A13D719A375F400D98CC7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,22 +259,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3F0A13D519A375F400D98CC7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		3F0A13DF19A375F400D98CC7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3F0A13BD19A375F400D98CC7 /* Staunton */;
-			targetProxy = 3F0A13DE19A375F400D98CC7 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		3F0A13CA19A375F400D98CC7 /* InfoPlist.strings */ = {
@@ -444,46 +373,6 @@
 			};
 			name = Release;
 		};
-		3F0A13EE19A375F400D98CC7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Staunton.app/Staunton";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Staunton/Staunton-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = "StauntonTests/StauntonTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Debug;
-		};
-		3F0A13EF19A375F400D98CC7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Staunton.app/Staunton";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Staunton/Staunton-Prefix.pch";
-				INFOPLIST_FILE = "StauntonTests/StauntonTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -501,15 +390,6 @@
 			buildConfigurations = (
 				3F0A13EB19A375F400D98CC7 /* Debug */,
 				3F0A13EC19A375F400D98CC7 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		3F0A13ED19A375F400D98CC7 /* Build configuration list for PBXNativeTarget "StauntonTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				3F0A13EE19A375F400D98CC7 /* Debug */,
-				3F0A13EF19A375F400D98CC7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
