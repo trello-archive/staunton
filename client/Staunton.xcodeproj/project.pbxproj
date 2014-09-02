@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3CAF393719AA8A2B005BCEE7 /* STNDiff.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CAF393619AA8A2B005BCEE7 /* STNDiff.m */; };
+		3CAF393A19AA8F57005BCEE7 /* STNHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CAF393919AA8F57005BCEE7 /* STNHelpers.m */; };
 		3F0A13C219A375F400D98CC7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C119A375F400D98CC7 /* Foundation.framework */; };
 		3F0A13C419A375F400D98CC7 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C319A375F400D98CC7 /* CoreGraphics.framework */; };
 		3F0A13C619A375F400D98CC7 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C519A375F400D98CC7 /* UIKit.framework */; };
@@ -18,6 +20,8 @@
 		3F0A13DC19A375F400D98CC7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C119A375F400D98CC7 /* Foundation.framework */; };
 		3F0A13DD19A375F400D98CC7 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C519A375F400D98CC7 /* UIKit.framework */; };
 		3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */; };
+		3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */; };
+		3F9FD57B19A37A85001A5EDD /* STNChessBoardView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */; };
 		46274014C7304A7389E700C3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 740ECFD7EAF1411B8C120E31 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +36,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3CAF393519AA8A2B005BCEE7 /* STNDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNDiff.h; sourceTree = "<group>"; };
+		3CAF393619AA8A2B005BCEE7 /* STNDiff.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNDiff.m; sourceTree = "<group>"; };
+		3CAF393819AA8F57005BCEE7 /* STNHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNHelpers.h; sourceTree = "<group>"; };
+		3CAF393919AA8F57005BCEE7 /* STNHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNHelpers.m; sourceTree = "<group>"; };
 		3F0A13BE19A375F400D98CC7 /* Staunton.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Staunton.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F0A13C119A375F400D98CC7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3F0A13C319A375F400D98CC7 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -47,6 +55,10 @@
 		3F0A13DA19A375F400D98CC7 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		3F81210419A3779C00FA6DF7 /* STNHomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNHomeViewController.h; sourceTree = "<group>"; };
 		3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNHomeViewController.m; sourceTree = "<group>"; };
+		3F9FD57519A37A58001A5EDD /* STNChessBoardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNChessBoardViewController.h; sourceTree = "<group>"; };
+		3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNChessBoardViewController.m; sourceTree = "<group>"; };
+		3F9FD57919A37A85001A5EDD /* STNChessBoardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNChessBoardView.h; sourceTree = "<group>"; };
+		3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNChessBoardView.m; sourceTree = "<group>"; };
 		740ECFD7EAF1411B8C120E31 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4FC5F0344C34E429470F492 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,11 +122,15 @@
 		3F0A13C719A375F400D98CC7 /* Staunton */ = {
 			isa = PBXGroup;
 			children = (
+				3F9FD57D19A3834A001A5EDD /* Models */,
+				3F9FD57819A37A74001A5EDD /* Views */,
 				3F81210119A3774400FA6DF7 /* View Controllers */,
 				3F0A13D019A375F400D98CC7 /* STNAppDelegate.h */,
 				3F0A13D119A375F400D98CC7 /* STNAppDelegate.m */,
 				3F0A13D319A375F400D98CC7 /* Images.xcassets */,
 				3F0A13C819A375F400D98CC7 /* Supporting Files */,
+				3CAF393819AA8F57005BCEE7 /* STNHelpers.h */,
+				3CAF393919AA8F57005BCEE7 /* STNHelpers.m */,
 			);
 			path = Staunton;
 			sourceTree = "<group>";
@@ -135,8 +151,28 @@
 			children = (
 				3F81210419A3779C00FA6DF7 /* STNHomeViewController.h */,
 				3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */,
+				3F9FD57519A37A58001A5EDD /* STNChessBoardViewController.h */,
+				3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */,
 			);
 			name = "View Controllers";
+			sourceTree = "<group>";
+		};
+		3F9FD57819A37A74001A5EDD /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3F9FD57919A37A85001A5EDD /* STNChessBoardView.h */,
+				3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		3F9FD57D19A3834A001A5EDD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3CAF393519AA8A2B005BCEE7 /* STNDiff.h */,
+				3CAF393619AA8A2B005BCEE7 /* STNDiff.m */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -270,8 +306,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */,
+				3F9FD57B19A37A85001A5EDD /* STNChessBoardView.m in Sources */,
 				3F0A13D219A375F400D98CC7 /* STNAppDelegate.m in Sources */,
+				3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */,
+				3CAF393719AA8A2B005BCEE7 /* STNDiff.m in Sources */,
 				3F0A13CE19A375F400D98CC7 /* main.m in Sources */,
+				3CAF393A19AA8F57005BCEE7 /* STNHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
