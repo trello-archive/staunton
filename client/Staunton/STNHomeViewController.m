@@ -16,7 +16,7 @@
     self.boardController = [[STNChessBoardViewController alloc] initWithDiffSignal:diffSignal];
     
     CGFloat side = MIN(self.view.frameSizeHeight, self.view.frameSizeWidth);
-    self.boardController.view.frame = CGRectMake(0, 0, side, side);
+    self.boardController.view.frame = CGRectMake(0, [UIApplication sharedApplication].statusBarFrame.size.height, side, side);
     [self.view addSubview:self.boardController.view];
     [self.boardController didMoveToParentViewController:self];
 }
