@@ -4,27 +4,27 @@
 name:                staunton
 version:             1.0.0.0
 synopsis:            "Chess" server
--- description:         
 homepage:            https://github.com/trello/staunton
--- license:             
 license-file:        LICENSE
 author:              Trello, Inc.
 maintainer:          hao@trello.com
--- copyright:           
--- category:            
 build-type:          Simple
--- extra-source-files:  
 cabal-version:       >=1.10
 
 executable staunton
   main-is:             Main.hs
-  -- other-modules:       
-  -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8
+  build-depends:       aeson >= 0.8.0.0
+                     , base >=4.7 && <4.8
                      , base-prelude >= 0.1.3
+                     , bytestring >= 0.10.4.0
                      , containers >= 0.5.5.1
+                     , exceptions >= 0.6.1
+                     , io-streams >= 1.1.4.6
+                     , mtl >= 2.2.1
+                     , suspend >= 0.2.0.0
                      , text >= 1.1.1.3
+                     , timers >= 0.2.0.2
                      , transformers >= 0.4.1.0
+                     , unix-time >= 0.3.3
                      , websockets >= 0.8.2.6
-  -- hs-source-dirs:      
   default-language:    Haskell2010
