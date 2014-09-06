@@ -33,14 +33,14 @@ static UIImageView *makeGravatarView(CGFloat size) {
 }
 
 - (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
-    return [RACSignal combineLatest:@[RACObserve(self.view, bounds),
-                                      positionSignal]
-                             reduce:^(NSValue *boundsValue, NSValue *positionValue) {
-                                 CGRect bounds = [boundsValue CGRectValue];
-                                 CGPoint position = [positionValue CGPointValue];
-                                 return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
-                                                                              bounds.size.height * position.y)];
-                             }];
+    return [[RACSignal combineLatest:@[RACObserve(self.view, bounds),
+                                       positionSignal]
+                              reduce:^(NSValue *boundsValue, NSValue *positionValue) {
+                                  CGRect bounds = [boundsValue CGRectValue];
+                                  CGPoint position = [positionValue CGPointValue];
+                                  return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
+                                                                               bounds.size.height * position.y)];
+                              }] animated];
 }
 
 - (void)handleDiffs:(RACSignal *)diffs forEmail:(NSString *)email {
