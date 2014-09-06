@@ -10,11 +10,8 @@
 
 @interface FCTWebSocket : NSObject
 
-@property (nonatomic, readonly) RACSignal *notificationSignal; // of FCTWebSocketNotification
-
-//! Called whenever the socket successfully opens.
-@property (nonatomic, copy) void (^openedBlock)(void);
-@property (nonatomic, copy) void (^messageBlock)(NSDictionary *message);
+@property (nonatomic, readonly) RACSignal *messageSignal;
+@property (nonatomic, readonly) RACSignal *openedSignal;
 
 - (void)start;
 

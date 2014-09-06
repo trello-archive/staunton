@@ -47,32 +47,24 @@ typedef enum {
 @property (nonatomic, assign) NSTimeInterval reconnectDelay;
 @property (nonatomic, assign) FCTWebSocketReadyState wsReadyState;
 
-@property (nonatomic, strong, readonly) NSMutableDictionary *callbacksByReqid;
+@property (nonatomic, strong) RACSubject *messageSubject;
+@property (nonatomic, strong) RACSubject *openedSubject;
 
-// Typecast helper.
-@property (nonatomic, strong, readonly) RACSubject *notificationSubject;
 
 @end
 
 @implementation FCTWebSocket
 
 - (void)dealloc {
-    [self.notificationSubject sendCompleted];
-    
-    for (NSString *key in [self.callbacksByReqid allKeys]) {
-        RACSubject *subject = self.callbacksByReqid[key];
-        [subject sendCompleted];
-    }
-    
+    [self.messageSubject sendCompleted];
     [self close];
 }
 
 - (instancetype)init {
     if (self = [super init]) {
-        _callbacksByReqid = [NSMutableDictionary dictionary];
-        _notificationSignal = [RACSubject subject];
-        
         _sendQueue = [NSMutableArray array];
+        _messageSubject = [RACSubject subject];
+        _openedSubject = [RACSubject subject];
         
         self.reconnectDelay = FCTWS_INITIAL_RECONNECT_DELAY;
         self.wsReadyState = FCTWebSocketReadyStateClosed;
@@ -81,18 +73,14 @@ typedef enum {
     return self;
 }
 
-- (RACSubject *)notificationSubject {
-    return (RACSubject *)self.notificationSignal;
+- (RACSignal *)messageSignal {
+    NSParameterAssert(self.messageSubject);
+    return self.messageSubject;
 }
 
-- (void (^)(void))openedBlock {
-    NSParameterAssert(_openedBlock);
-    return _openedBlock;
-}
-
-- (void (^)(NSDictionary *))messageBlock {
-    NSParameterAssert(_messageBlock);
-    return _messageBlock;
+- (RACSignal *)openedSignal {
+    NSParameterAssert(self.openedSubject);
+    return self.openedSubject;
 }
 
 - (void)start {
@@ -220,8 +208,7 @@ typedef enum {
     NSData *data = [jsonPartOfMessage dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     NSAssert([json isKindOfClass:[NSDictionary class]], @"Invalid JSON returned from WebSocket!");
-    
-    self.messageBlock(json);
+    [self.messageSubject sendNext:json];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
@@ -243,8 +230,7 @@ typedef enum {
     }
     [self.sendQueue removeAllObjects];
     self.reconnectDelay = FCTWS_INITIAL_RECONNECT_DELAY;
-    
-    self.openedBlock();
+    [self.openedSubject sendNext:@YES];
 }
 
 // WebSocket errors are not intuitive. Here are the most important cases we're handling here:
@@ -260,6 +246,7 @@ typedef enum {
     NSParameterAssert(NSThread.currentThread.isMainThread);
     
     FCTWSLog(@"WebSocket failed with error \"%@\"", error);
+    [self.openedSubject sendNext:@NO];
     [self recover];
 }
 
@@ -267,6 +254,7 @@ typedef enum {
     NSParameterAssert(NSThread.currentThread.isMainThread);
     
     FCTWSLog(@"WebSocket closed with code \"%@\" and reason \"%@\" and wasClean \"%@\"", @(code), reason, @(wasClean));
+    [self.openedSubject sendNext:@NO];
     [self recover];
 }
 
