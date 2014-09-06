@@ -23,6 +23,7 @@ data Player = Player Email deriving (Eq, Ord, Show)
 data Move = Move Location deriving (Show)
 data Pong = Pong Bool
 type DB = Map Player (Location, UnixTime, WS.Connection)
+newtype World = World DB
 
 instance A.FromJSON Player where
   parseJSON (A.Object o) = Player <$> o A..: "email"
@@ -33,18 +34,28 @@ instance A.FromJSON Move where
 instance A.FromJSON Pong where
   parseJSON (A.Object o) = Pong <$> o A..: "pong"
 
+instance A.ToJSON World where
+  toJSON (World db) =
+    A.object [("world", A.toJSON tuples)]
+    where
+      tuples =
+        [(email, loc) | (Player email, (loc, _, _)) <- M.toList db]
+
 ping :: WS.Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
 
-heartbeatIntervalSeconds :: Int64
-heartbeatIntervalSeconds = 1
+secondsPerBroadcast :: Int64
+secondsPerBroadcast = 1
+
+secondsPerHeartbeat :: Int64
+secondsPerHeartbeat = 20
 
 heartbeat :: DB -> IO DB
 heartbeat db =
   M.fromList <$> heartbeatFilterM (M.toList db)
   where
     delta =
-      secondsToUnixDiffTime (heartbeatIntervalSeconds * 2)
+      secondsToUnixDiffTime (secondsPerHeartbeat * 2)
     heartbeatFilterM =
       filterM $ \(player, (_, lastPongTime, conn)) -> do
         now <- getUnixTime
@@ -56,6 +67,15 @@ heartbeat db =
          False -> do
            ping conn
            return True
+
+broadcast :: DB -> IO ()
+broadcast db =
+  forM_ (M.toList db) unicast
+  where
+    json =
+      A.encode (World db)
+    unicast (_, (_, _, conn)) =
+      WS.sendTextData conn json
 
 dataflow :: (Player
              -> WS.Connection
@@ -89,11 +109,19 @@ dataflow onConnect pending = do
     -- MaybeT IO monad, however, is quite delightful.
     unforever = mzero
 
+runTimers :: MVar DB -> IO () -> IO ()
+runTimers state application = do
+  heartbeatTimer <- makeTimer (C.modifyMVar_ state $ heartbeat) secondsPerHeartbeat
+  broadcastTimer <- makeTimer (C.readMVar state >>= broadcast) secondsPerBroadcast
+  (`finally` (forM_ [heartbeatTimer, broadcastTimer] stopTimer)) application
+  where
+    makeTimer io secs = repeatedTimer io (sDelay secs)
+
 mainWithState :: MVar DB -> IO ()
 mainWithState state = do
   putStrLn "+ Heartbeat up"
-  timer <- repeatedTimer (withDB $ heartbeat) (sDelay heartbeatIntervalSeconds)
-  (`finally` (stopTimer timer)) $ runServer (dataflow application)
+  putStrLn "+ Broadcast up"
+  runTimers state $ runServer (dataflow application)
   where
     withDB =
       C.modifyMVar_ state
