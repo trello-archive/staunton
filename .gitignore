@@ -9,4 +9,4 @@
 .cabal-sandbox/
 cabal.sandbox.config
 server/dist/
-
+client/build/

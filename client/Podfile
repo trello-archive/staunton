@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 platform :ios, '7.0'
 
 xcodeproj 'Staunton'
@@ -5,4 +7,5 @@ xcodeproj 'Staunton'
 pod 'KHGravatar'
 pod 'KHGravatar/AFNetworking'
 pod 'ReactiveCocoa'
-pod 'UIView+Helpers'
+pod 'UIView+Helpers', :inhibit_warnings => true
+pod 'SocketRocket', :inhibit_warnings => true
