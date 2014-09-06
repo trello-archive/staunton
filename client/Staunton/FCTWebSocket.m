@@ -18,7 +18,7 @@ static void FCTWSLog(NSString *format, ...) {
         va_start(args, format);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-        NSLogv([NSString stringWithFormat:@"FCTWSLog: %@", format], args);
+        NSLogv([NSString stringWithFormat:@"\nFCTWSLog: %@", format], args);
 #pragma clang diagnostic pop
         va_end(args);
     }
@@ -68,7 +68,14 @@ typedef enum {
 
 - (instancetype)initWithJSONSignal:(RACSignal *)JSONSignal {
     if (self = [super init]) {
+        @weakify(self);
         [self prepare];
+        [[JSONSignal takeUntil:self.rac_willDeallocSignal] subscribeNext:^(id x) {
+            @strongify(self);
+            NSData *data = [NSJSONSerialization dataWithJSONObject:x options:0 error:nil];
+            NSString *unicode = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            [self send:unicode withBackoff:YES];
+        }];
     }
     return self;
 }
@@ -89,7 +96,7 @@ typedef enum {
 
 - (RACSignal *)openedSignal {
     NSParameterAssert(self.openedSubject);
-    return self.openedSubject;
+    return [self.openedSubject distinctUntilChanged];
 }
 
 - (void)start {
@@ -196,6 +203,8 @@ typedef enum {
     NSData *data = [jsonPartOfMessage dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     NSAssert([json isKindOfClass:[NSDictionary class]], @"Invalid JSON returned from WebSocket!");
+
+    FCTWSLog(@"WebSocket received %@", jsonPartOfMessage);
     [self.messageSubject sendNext:json];
 }
 
