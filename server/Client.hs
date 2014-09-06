@@ -9,8 +9,8 @@ import qualified Network.WebSockets as WS
 import           System.IO
 import           Text.Printf
 
-application :: WS.ClientApp ()
-application conn = do
+application :: Bool -> WS.ClientApp ()
+application shouldPong conn = do
    (pingPongThread, send) <- makePingPongThread
    send "{\"email\": \"%s\"}"
    send "{\"player\": {\"email\": \"%s\"}, \"x\": 1.0, \"y\": 1.0}"
@@ -30,14 +30,14 @@ application conn = do
       thread <- forkIO $ (`catch` net) . forever $ do
         msg <- WS.receiveData conn
         putStrLn ("+ Pinged: " <> show (msg :: T.Text))
-        -- Uncomment this line to not be GCd by the heartbeat
-        -- WS.sendTextData conn ("{\"pong\": true}" :: T.Text)
+        case shouldPong of
+         True -> WS.sendTextData conn ("{\"pong\": true}" :: T.Text)
         putStrLn ("+ Ponged")
       return (thread, makeSend thread)
     net ThreadKilled =
       return ()
 
-cmain :: IO ()
-cmain = do
+client :: Bool -> IO ()
+client shouldPong = do
   hSetBuffering stdout LineBuffering
-  WS.runClient "localhost" 9160 "/" application
+  WS.runClient "localhost" 9160 "/" (application shouldPong)
