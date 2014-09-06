@@ -43,7 +43,6 @@ typedef enum {
 // For messages that haven't been sent (because the socket was closed).
 @property (nonatomic, strong, readonly) NSMutableArray *sendQueue;
 
-@property (nonatomic, assign) NSTimeInterval reconnectDelay;
 @property (nonatomic, assign) FCTWebSocketReadyState wsReadyState;
 
 @property (nonatomic, strong) RACSubject *messageSubject;
@@ -61,15 +60,26 @@ typedef enum {
 
 - (instancetype)init {
     if (self = [super init]) {
-        _sendQueue = [NSMutableArray array];
-        _messageSubject = [RACSubject subject];
-        _openedSubject = [RACSubject subject];
-        
-        self.reconnectDelay = FCTWS_INITIAL_RECONNECT_DELAY;
-        self.wsReadyState = FCTWebSocketReadyStateClosed;
-        self.webSocket = nil;
+        FCTWSLog(@"Protip: Use initWithJSONSignal instead to send JSON (Exercise 2)");
+        [self prepare];
     }
     return self;
+}
+
+- (instancetype)initWithJSONSignal:(RACSignal *)JSONSignal {
+    if (self = [super init]) {
+        [self prepare];
+    }
+    return self;
+}
+
+- (void)prepare {
+    _sendQueue = [NSMutableArray array];
+    _messageSubject = [RACSubject subject];
+    _openedSubject = [RACSubject subject];
+    
+    self.wsReadyState = FCTWebSocketReadyStateClosed;
+    self.webSocket = nil;
 }
 
 - (RACSignal *)messageSignal {
@@ -129,33 +139,12 @@ typedef enum {
     [self openWithBackoff];
 }
 
-- (NSTimeInterval)randomJitter {
-    // Returns a randon NSTimeInterval between 0 and _reconnectDelay/2 (inclusive).
-    NSTimeInterval random = arc4random_uniform(1024) / 1024.;
-    return random * (self.reconnectDelay / 2);
-}
-
-- (NSString *)randomReqid {
-    return [NSString stringWithFormat:@"%@", @(arc4random())];
-}
-
 - (void)openWithBackoff {
-    // Only try reconnecting for ~20 minutes, cumulatively
-    if (self.reconnectDelay < 819.2) {
-        NSTimeInterval randomJitter = [self randomJitter];
-        NSTimeInterval reconnectDelayPlusRandomJitter = self.reconnectDelay + randomJitter;
-        FCTWSLog(@"Using a reconnect delay of %f = %f + %f", reconnectDelayPlusRandomJitter, self.reconnectDelay, randomJitter);
-        
-        @weakify(self);
-        [[[[RACSignal interval:reconnectDelayPlusRandomJitter onScheduler:[RACScheduler mainThreadScheduler]] take:1] takeUntil:self.rac_willDeallocSignal] subscribeNext:^(id x) {
-            @strongify(self);
-            [self open];
-        }];
-        
-        self.reconnectDelay = MIN(self.reconnectDelay * 2.0, FCTWS_MAX_RECONNECT_DELAY);
-    } else {
-        FCTWSLog(@"Giving up on web sockets");
-    }
+    @weakify(self);
+    [[[[RACSignal interval:1 onScheduler:[RACScheduler mainThreadScheduler]] take:1] takeUntil:self.rac_willDeallocSignal] subscribeNext:^(id x) {
+        @strongify(self);
+        [self open];
+    }];
 }
 
 - (void)initiateOpen {
@@ -228,7 +217,6 @@ typedef enum {
         [self sendBlindly:message];
     }
     [self.sendQueue removeAllObjects];
-    self.reconnectDelay = FCTWS_INITIAL_RECONNECT_DELAY;
     [self.openedSubject sendNext:@YES];
 }
 
