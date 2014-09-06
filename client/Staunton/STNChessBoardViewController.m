@@ -33,29 +33,53 @@ static UIImageView *makeGravatarView(CGFloat size) {
 }
 
 - (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
-    return [RACSignal combineLatest:@[RACObserve(self.view, bounds),
-                                      positionSignal]
-                             reduce:^(NSValue *boundsValue, NSValue *positionValue) {
-                                 CGRect bounds = [boundsValue CGRectValue];
-                                 CGPoint position = [positionValue CGPointValue];
-                                 return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
-                                                                              bounds.size.height * position.y)];
-                             }];
+    return [[RACSignal combineLatest:@[RACObserve(self.view, bounds),
+                                       positionSignal]
+                              reduce:^(NSValue *boundsValue, NSValue *positionValue) {
+                                  CGRect bounds = [boundsValue CGRectValue];
+                                  CGPoint position = [positionValue CGPointValue];
+                                  return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
+                                                                               bounds.size.height * position.y)];
+                              }] animated];
 }
 
 - (void)handleDiffs:(RACSignal *)diffs forEmail:(NSString *)email {
-    RACSignal *positionSignal = [[diffs takeWhileBlock:^BOOL(STNDiff *diff) {
-        return !diff.isRemove;
-    }] map:^(STNDiff *diff) {
-        return [NSValue valueWithCGPoint:diff.point];
+    __block UIImageView *gravatarView = nil;
+    
+    RACSignal *insertions = [diffs filter:^BOOL(STNDiff *diff) {
+        return diff.isInsert;
+    }];
+
+    RACSignal *removals = [diffs filter:^BOOL(STNDiff *diff) {
+        return diff.isRemove;
     }];
     
-    UIImageView *gravatarView = makeGravatarView(32.0f);
-    [gravatarView setImageWithGravatarEmailAddress:email];
-    [self.view addSubview:gravatarView];
-    RAC(gravatarView, center) = [self centerForPosition:positionSignal];
-    [positionSignal subscribeCompleted:^{
+    [insertions subscribeNext:^(id x) {
+        if (gravatarView != nil) {
+            NSLog(@"dropping insertion of known email!");
+            return;
+        }
+        gravatarView = makeGravatarView(self.view.bounds.size.width * 0.06);
+        [gravatarView setImageWithGravatarEmailAddress:email];
+        [self.view addSubview:gravatarView];
+
+        RACSignal *positionSignal = [[diffs takeUntil:removals] map:^(STNDiff *diff) {
+            return [NSValue valueWithCGPoint:diff.point];
+        }];
+        
+        RAC(gravatarView, center) = [self centerForPosition:positionSignal];
+        [positionSignal subscribeCompleted:^{
+            [gravatarView removeFromSuperview];
+        }];
+    }];
+    
+    [removals subscribeNext:^(id x) {
+        if (gravatarView == nil) {
+            NSLog(@"dropping removal of unknown email!");
+            return;
+        }
         [gravatarView removeFromSuperview];
+        gravatarView = nil;
     }];
 }
 

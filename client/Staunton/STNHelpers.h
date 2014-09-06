@@ -7,3 +7,9 @@
 //
 
 CGFloat randfloat();
+
+@interface RACSignal (Helpers)
+
+- (RACSignal *)animated;
+
+@end
