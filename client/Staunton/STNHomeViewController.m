@@ -3,11 +3,20 @@
 #import "STNDiff.h"
 #import "FCTWebSocket.h"
 
+/// EXERCISE 0: FORMALITIES
+///
+/// Please Build and Run on the iPad Air simulator.
+/// Let us know in chat or in person if you have any
+/// problems. The chat URL is:
+///
+///  http://www.hipchat.com/gBH2nxWKC
+
 @interface STNHomeViewController ()
 
 @property (strong, nonatomic) STNChessBoardViewController *boardController;
 @property (strong, nonatomic) UILabel *label;
 @property (strong, nonatomic) FCTWebSocket *socket;
+@property (strong, nonatomic) RACSubject *JSONSubject;
 
 @end
 
@@ -15,13 +24,15 @@
 
 - (void)viewDidLoad {
     [self prepareSocket];
+    [self prepareStateMachine];
 }
 
 - (void)prepareSocket {
     self.label = [[UILabel alloc] init];
-    self.label.font = [UIFont fontWithName:@"Futura" size:15];
+    self.label.font = [UIFont fontWithName:@"Futura" size:18];
 
-    self.socket = [[FCTWebSocket alloc] init];
+    self.JSONSubject = [RACSubject subject];
+    self.socket = [[FCTWebSocket alloc] initWithJSONSignal:self.JSONSubject];
 
     /// EXERCISE ONE: HELLO, REACTIVE COCOA
     ///
@@ -34,6 +45,42 @@
     RAC(self, label.text) = [[self.socket.openedSignal map:^id(NSNumber *n) {
         return n.boolValue ? @"+ WebSocket: connected ∰." : @"+ WebSocket: disconnected ☁.";
     }] startWith:@"+ WebSocket: initializing..."];
+}
+
+- (void)prepareStateMachine {
+    @weakify(self);
+    /// EXERCISE TWO: ACTION & REACTION
+    ///
+    /// Opening a socket is all and good, but we'd like to now register
+    /// ourselves with the server. And to do that we need to send a
+    /// little bit of JSON with our email address (which will only be
+    /// used to find a Gravatar).
+    NSDictionary *registration = @{@"email": @"me@haolian.org"};
+
+    /// We want to execute the next bit of code:
+    ///
+    ///   [self.JSONSubject sendNext:registration];
+    ///
+    /// However, we only want to do it when the socket is opened. We
+    /// have self.socket.openedSignal. How do we make sure our code
+    /// runs only when the signal sends a @YES?
+    ///
+    /// Solution: git stash; git co 2
+    [[[self.socket.openedSignal ignore:@NO] take:1] subscribeNext:^(id x) {
+        @strongify(self);
+        [self.JSONSubject sendNext:registration];
+
+        RACSignal *onDisconnect = [[self.socket.openedSignal ignore:@YES] take:1];
+        [[self.socket.messageSignal takeUntil:onDisconnect] subscribeNext:^(NSDictionary *json) {
+            if (json[@"ping"]) {
+                [self.JSONSubject sendNext:@{@"pong": @YES}];
+            }
+        }];
+
+        [onDisconnect subscribeNext:^(id x) {
+            [self prepareStateMachine];
+        }];
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
