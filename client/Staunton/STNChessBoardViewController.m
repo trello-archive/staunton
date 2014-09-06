@@ -33,14 +33,14 @@ static UIImageView *makeGravatarView(CGFloat size) {
 }
 
 - (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
-    return [[RACSignal combineLatest:@[RACObserve(self.view, bounds),
-                                       positionSignal]
-                              reduce:^(NSValue *boundsValue, NSValue *positionValue) {
-                                  CGRect bounds = [boundsValue CGRectValue];
-                                  CGPoint position = [positionValue CGPointValue];
-                                  return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
-                                                                               bounds.size.height * position.y)];
-                              }] animated];
+    return [RACSignal combineLatest:@[RACObserve(self.view, bounds),
+                                      positionSignal]
+                             reduce:^(NSValue *boundsValue, NSValue *positionValue) {
+                                 CGRect bounds = [boundsValue CGRectValue];
+                                 CGPoint position = [positionValue CGPointValue];
+                                 return [NSValue valueWithCGPoint:CGPointMake(bounds.size.width * position.x,
+                                                                              bounds.size.height * position.y)];
+                             }];
 }
 
 - (UILongPressGestureRecognizer *)addRecognizer:(UIView *)view {
@@ -108,7 +108,9 @@ static UIImageView *makeGravatarView(CGFloat size) {
         
         RAC(gravatarView, center) = [RACSignal if:isDragging
                                      then:[self centerSignalFromRecognizer:recognizer]
-                                     else:[self centerForPosition:positionSignal]];
+                                     else:[RACSignal defer:^{
+            return [[self centerForPosition:positionSignal] animated];
+        }]];
     }];
     
     [removals subscribeNext:^(id x) {
