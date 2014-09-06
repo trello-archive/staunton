@@ -12,6 +12,14 @@ CGFloat randfloat() {
     return (CGFloat)arc4random() / 0x100000000;
 }
 
+CGPoint CGPointAdd(CGPoint a, CGPoint b) {
+    return CGPointMake(a.x + b.x, a.y + b.y);
+}
+
+CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
+    return CGPointMake(a.x - b.x, a.y - b.y);
+}
+
 @implementation RACSignal (Helpers)
 
 - (RACSignal *)animated {

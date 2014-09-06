@@ -43,6 +43,38 @@ static UIImageView *makeGravatarView(CGFloat size) {
                               }] animated];
 }
 
+- (UILongPressGestureRecognizer *)addRecognizer:(UIView *)view {
+    UILongPressGestureRecognizer *recognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:nil action:nil];
+    recognizer.minimumPressDuration = 0.1;
+    view.userInteractionEnabled = YES;
+    [view addGestureRecognizer:recognizer];
+    return recognizer;
+}
+
+- (RACSignal *)centerSignalFromRecognizer:(UILongPressGestureRecognizer *)recognizer {
+    RACSubject *centerSubject = [RACSubject subject];
+    __block CGPoint initialPosition;
+    [recognizer.rac_gestureSignal subscribeNext:^(UILongPressGestureRecognizer *recognizer) {
+        UIView *view = recognizer.view;
+        switch (recognizer.state) {
+            case UIGestureRecognizerStateBegan:
+                initialPosition = [recognizer locationInView:view];
+                break;
+            case UIGestureRecognizerStateChanged: {
+                CGPoint topLeft = CGPointSubtract([recognizer locationInView:view.superview], initialPosition);
+                CGPoint center = CGPointAdd(topLeft, CGPointMake(CGRectGetMidX(view.bounds), CGRectGetMidY(view.bounds)));
+                [centerSubject sendNext:[NSValue valueWithCGPoint:center]];
+                break;
+            }
+            case UIGestureRecognizerStateEnded:
+                // blah blah, send update here
+                break;
+            default: break;
+        };
+    }];
+    return centerSubject;
+}
+
 - (void)handleDiffs:(RACSignal *)diffs forEmail:(NSString *)email {
     __block UIImageView *gravatarView = nil;
     
@@ -67,10 +99,16 @@ static UIImageView *makeGravatarView(CGFloat size) {
             return [NSValue valueWithCGPoint:diff.point];
         }];
         
-        RAC(gravatarView, center) = [self centerForPosition:positionSignal];
-        [positionSignal subscribeCompleted:^{
-            [gravatarView removeFromSuperview];
+        UILongPressGestureRecognizer *recognizer = [self addRecognizer:gravatarView];
+        
+        RACSignal *isDragging = [RACObserve(recognizer, state) map:^id(NSNumber *stateNumber) {
+            return @(stateNumber.unsignedIntegerValue == UIGestureRecognizerStateBegan
+            || stateNumber.unsignedIntegerValue == UIGestureRecognizerStateChanged);
         }];
+        
+        RAC(gravatarView, center) = [RACSignal if:isDragging
+                                     then:[self centerSignalFromRecognizer:recognizer]
+                                     else:[self centerForPosition:positionSignal]];
     }];
     
     [removals subscribeNext:^(id x) {
