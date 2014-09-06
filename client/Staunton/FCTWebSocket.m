@@ -10,19 +10,18 @@
 #import <ReactiveCocoa/ReactiveCocoa.h>
 #import "FCTWebSocket.h"
 
-static const float FCTWS_INITIAL_RECONNECT_DELAY = 0.1;
-static const NSUInteger FCTWS_MAX_RECONNECT_DELAY = 1200;
+static const NSUInteger FCT_DEBUG_WEB_SOCKETS = 1;
 
 static void FCTWSLog(NSString *format, ...) {
-#if DEBUG_WEB_SOCKETS
-    va_list args;
-    va_start(args, format);
+    if (FCT_DEBUG_WEB_SOCKETS) {
+        va_list args;
+        va_start(args, format);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-    NSLogv([NSString stringWithFormat:@"FCTWSLog: %@", format], args);
+        NSLogv([NSString stringWithFormat:@"FCTWSLog: %@", format], args);
 #pragma clang diagnostic pop
-    va_end(args);
-#endif
+        va_end(args);
+    }
 }
 
 static NSURL *stauntonServerURL(void) {
