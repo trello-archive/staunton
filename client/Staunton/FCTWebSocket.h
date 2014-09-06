@@ -13,6 +13,8 @@
 @property (nonatomic, readonly) RACSignal *messageSignal;
 @property (nonatomic, readonly) RACSignal *openedSignal;
 
+- (instancetype)initWithJSONSignal:(RACSignal *)JSONSignal;
+
 - (void)start;
 
 @end
