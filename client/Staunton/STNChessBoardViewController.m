@@ -4,9 +4,9 @@
 
 @interface STNChessBoardViewController ()
 
-@property (strong, nonatomic) RACSignal *diffSignal;
 @property (strong, nonatomic) UIView *myView;
 @property (strong, nonatomic) UIView *kingView;
+@property (strong, nonatomic) STNWebSocket *socket;
 
 @end
 
@@ -24,9 +24,10 @@ static UIImageView *makeGravatarView(CGFloat size) {
 
 @implementation STNChessBoardViewController
 
-- (instancetype)initWithDiffSignal:(RACSignal *)diffSignal {
+- (instancetype)initWithSocket:(STNWebSocket *)socket {
+    NSParameterAssert(socket);
     if (self = [super init]) {
-        self.diffSignal = diffSignal;
+        self.socket = socket;
     }
     return self;
 }
@@ -46,7 +47,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
     [self prepareKingView];
 
     @weakify(self);
-    [[self.diffSignal groupBy:^(STNDiff *diff) {
+    [[self.socket.playersPositionSignal groupBy:^(STNDiff *diff) {
         return diff.email;
     }] subscribeNext:^(RACGroupedSignal *perUserDiffs) {
         @strongify(self);
@@ -83,7 +84,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
     RACSignal *dragSignal = [self signalForRecognizer:recognizer];
     RACSignal *isDragging = [self isDraggingSignal:dragSignal];
 
-    [gravatarView setImageWithGravatarEmailAddress:@"foo@bar.com"];
+    [gravatarView setImageWithGravatarEmailAddress:self.socket.email];
 
     gravatarView.layer.borderColor = UIColor.whiteColor.CGColor;
 
