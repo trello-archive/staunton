@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, NoImplicitPrelude, NamedFieldPuns #-}
 
-import           BasePrelude hiding ((\\), finally)
+import           BasePrelude hiding ((\\), finally, read)
 import           Control.Concurrent (MVar)
 import qualified Control.Concurrent as C
 import           Control.Concurrent.Suspend (sDelay)
@@ -45,6 +45,12 @@ instance A.ToJSON World where
       tuples =
         [(email, loc) | (Player email, (loc, _, _)) <- M.toList db] <>
         [("king@aol.com", kingLocation)]
+
+read :: MVar a -> IO a
+read = C.readMVar
+
+modify :: MVar a -> (a -> IO a) -> IO ()
+modify = C.modifyMVar_
 
 ping :: WS.Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
@@ -133,9 +139,9 @@ runTimers state application = do
   kingState <- C.newMVar (0, 0)
   kingTimer <- makeTimer (C.modifyMVar_ kingState $ const king) secondsPerKing
   putStrLn "+ King up"
-  heartbeatTimer <- makeTimer (C.modifyMVar_ state $ heartbeat) secondsPerHeartbeat
+  heartbeatTimer <- makeTimer (modify state $ heartbeat) secondsPerHeartbeat
   putStrLn "+ Heartbeat up"
-  let kingIO = join (broadcast <$> C.readMVar state <*> C.readMVar kingState)
+  let kingIO = join (broadcast <$> read state <*> read kingState)
   broadcastTimer <- makeTimer kingIO secondsPerBroadcast
   putStrLn "+ Broadcast up"
   (`finally` (forM_ [heartbeatTimer, broadcastTimer, kingTimer] stopTimer)) application
@@ -146,21 +152,19 @@ mainWithState :: MVar DB -> IO ()
 mainWithState state = do
   runTimers state $ runServer (dataflow application)
   where
-    withDB =
-      C.modifyMVar_ state
     application player conn = do
       putStrLn ("+ Connecting " <> show player)
       renew
       return (onMove, onPong, onDisconnect)
       where
-        renew = withDB $ \db -> do
+        renew = modify state $ \db -> do
           now <- getUnixTime
           return (M.insert player ((0, 0), now, conn) db)
-        onMove (Move to) = withDB $ \db -> do
+        onMove (Move to) = modify state $ \db -> do
           putStrLn ("+ Move from " <> show player <> ": " <> show to)
           now <- getUnixTime
           return (M.insert player (to, now, conn) db)
-        onDisconnect = withDB $ \db -> do
+        onDisconnect = modify state $ \db -> do
           putStrLn ("+ Disconnecting " <> show player)
           return (M.delete player db)
         onPong _ = do
