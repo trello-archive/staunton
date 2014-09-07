@@ -34,7 +34,7 @@ typedef enum {
     FCTWebSocketReadyStateClosed
 } FCTWebSocketReadyState;
 
-#pragma mark - Anonymous category
+#pragma mark - Class extension
 
 @interface FCTWebSocket () <SRWebSocketDelegate>
 
