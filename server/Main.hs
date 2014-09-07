@@ -28,12 +28,15 @@ data World = World DB Location
 
 instance A.FromJSON Player where
   parseJSON (A.Object o) = Player <$> o A..: "email"
+  parseJSON _ = error "Invalid player"
 
 instance A.FromJSON Move where
   parseJSON (A.Object o) = Move <$> ((,) <$> o A..: "x" <*> o A..: "y")
+  parseJSON _ = error "Invalid move"
 
 instance A.FromJSON Pong where
   parseJSON (A.Object o) = Pong <$> o A..: "pong"
+  parseJSON _ = error "Invalid pong"
 
 instance A.ToJSON World where
   toJSON (World db kingLocation) =
@@ -105,7 +108,7 @@ dataflow onConnect pending = do
      putStrLn ("Invalid registration: " <> show initial)
    Just player -> do
      (onMove, onPong, onDisconnect) <- onConnect player conn
-     ((`finally` onDisconnect) . runMaybeT . forever) $ do
+     (void . (`finally` onDisconnect) . runMaybeT . forever) $ do
        message <- lift $ WS.receiveData conn
        case A.decode message of
         Just move ->
