@@ -16,6 +16,7 @@ import           Data.UnixTime (UnixTime, getUnixTime, secondsToUnixDiffTime, di
 import qualified Network.WebSockets as WS
 import           System.IO
 import           System.IO.Streams.Attoparsec (ParseException)
+import           System.Random (getStdRandom, randomR)
 
 type Email = Text
 type Location = (Float, Float)
@@ -23,7 +24,7 @@ data Player = Player Email deriving (Eq, Ord, Show)
 data Move = Move Location deriving (Show)
 data Pong = Pong Bool
 type DB = Map Player (Location, UnixTime, WS.Connection)
-newtype World = World DB
+data World = World DB Location
 
 instance A.FromJSON Player where
   parseJSON (A.Object o) = Player <$> o A..: "email"
@@ -35,11 +36,12 @@ instance A.FromJSON Pong where
   parseJSON (A.Object o) = Pong <$> o A..: "pong"
 
 instance A.ToJSON World where
-  toJSON (World db) =
+  toJSON (World db kingLocation) =
     A.object [("world", A.toJSON tuples)]
     where
       tuples =
-        [(email, loc) | (Player email, (loc, _, _)) <- M.toList db]
+        [(email, loc) | (Player email, (loc, _, _)) <- M.toList db] <>
+        [("king@aol.com", kingLocation)]
 
 ping :: WS.Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
@@ -49,6 +51,9 @@ secondsPerBroadcast = 1
 
 secondsPerHeartbeat :: Int64
 secondsPerHeartbeat = 20
+
+secondsPerKing :: Int64
+secondsPerKing = 5
 
 heartbeat :: DB -> IO DB
 heartbeat db =
@@ -68,14 +73,25 @@ heartbeat db =
            ping conn
            return True
 
-broadcast :: DB -> IO ()
-broadcast db =
+broadcast :: DB -> Location -> IO ()
+broadcast db kingLocation =
   forM_ (M.toList db) unicast
   where
     json =
-      A.encode (World db)
+      A.encode (World db kingLocation)
     unicast (_, (_, _, conn)) =
       WS.sendTextData conn json
+
+king :: IO Location
+king = do
+  x <- randomFloat
+  y <- randomFloat
+  let location = (x, y) :: Location
+  putStrLn ("+ King moving to: " <> show location)
+  return (x, y)
+  where
+    randomFloat = ((/ 1024) . fromIntegral) <$> getStdRandom limits
+    limits = randomR (0, 1024 :: Int)
 
 dataflow :: (Player
              -> WS.Connection
@@ -111,16 +127,20 @@ dataflow onConnect pending = do
 
 runTimers :: MVar DB -> IO () -> IO ()
 runTimers state application = do
+  kingState <- C.newMVar (0, 0)
+  kingTimer <- makeTimer (C.modifyMVar_ kingState $ const king) secondsPerKing
+  putStrLn "+ King up"
   heartbeatTimer <- makeTimer (C.modifyMVar_ state $ heartbeat) secondsPerHeartbeat
-  broadcastTimer <- makeTimer (C.readMVar state >>= broadcast) secondsPerBroadcast
-  (`finally` (forM_ [heartbeatTimer, broadcastTimer] stopTimer)) application
+  putStrLn "+ Heartbeat up"
+  let kingIO = join (broadcast <$> C.readMVar state <*> C.readMVar kingState)
+  broadcastTimer <- makeTimer kingIO secondsPerBroadcast
+  putStrLn "+ Broadcast up"
+  (`finally` (forM_ [heartbeatTimer, broadcastTimer, kingTimer] stopTimer)) application
   where
     makeTimer io secs = repeatedTimer io (sDelay secs)
 
 mainWithState :: MVar DB -> IO ()
 mainWithState state = do
-  putStrLn "+ Heartbeat up"
-  putStrLn "+ Broadcast up"
   runTimers state $ runServer (dataflow application)
   where
     withDB =
