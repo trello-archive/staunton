@@ -25,6 +25,7 @@ data Move = Move Location deriving (Show)
 data Pong = Pong Bool
 type DB = Map Player (Location, UnixTime, WS.Connection)
 data World = World DB Location
+newtype Scoreboard = Scoreboard (Map Player Float)
 
 instance A.FromJSON Player where
   parseJSON (A.Object o) = Player <$> o A..: "email"
@@ -45,6 +46,12 @@ instance A.ToJSON World where
       tuples =
         [(email, loc) | (Player email, (loc, _, _)) <- M.toList db] <>
         [("king@aol.com", kingLocation)]
+
+instance A.ToJSON Scoreboard where
+  toJSON (Scoreboard scores) =
+    A.object [("scoreboard", A.toJSON tuples)]
+    where
+      tuples = [(email, score) | (Player email, score) <- M.toList scores]
 
 read :: MVar a -> IO a
 read = C.readMVar
@@ -73,14 +80,12 @@ heartbeat wait db =
            ping conn
            return True
 
-broadcast :: DB -> Location -> IO ()
-broadcast db kingLocation =
+broadcast :: (A.ToJSON a) => DB -> a -> IO ()
+broadcast db obj =
   forM_ (M.toList db) unicast
   where
-    json =
-      A.encode (World db kingLocation)
     unicast (_, (_, _, conn)) =
-      WS.sendTextData conn json
+      WS.sendTextData conn (A.encode obj)
 
 king :: IO Location
 king = do
@@ -92,6 +97,23 @@ king = do
   where
     randomFloat = ((/ 1024) . fromIntegral) <$> getStdRandom limits
     limits = randomR (0, 1024 :: Int)
+
+scoring :: Location -> DB -> Map Player Float -> IO (Map Player Float)
+scoring hill db scores = do
+  broadcast db (Scoreboard scores)
+  return scores'
+  where
+    scores' =
+      M.mapWithKey (\player (loc, _, _) -> score player + score' loc) db
+    score player =
+      maybe 0 id (M.lookup player scores)
+    score' loc =
+      if distance loc > 0.01 then 1 / (distance loc) else 100
+    distance loc =
+      let (x0, y0) = loc
+          (x1, y1) = hill in
+      sqrt ((x1 - x0) ^ two + (y1 - y0) ^ two)
+    two = 2 :: Int -- :(
 
 dataflow :: (Player
              -> WS.Connection
@@ -127,21 +149,41 @@ dataflow onConnect pending = do
 
 runTimers :: MVar DB -> IO () -> IO ()
 runTimers state application = do
-  kingState <- C.newMVar (0, 0)
-  kingTimer <- makeTimer (C.modifyMVar_ kingState $ const king) secondsPerKing
+  kingState <- C.newMVar =<< king
+  kingTimer <- makeTimer (modify kingState $ const king) secondsPerKing
   putStrLn "+ King up"
-  heartbeatTimer <- makeTimer (modify state $ heartbeat maxSecondsBeforeGC) secondsPerHeartbeat
+
+  heartbeatTimer <-
+    makeTimer (modify state $ heartbeat maxSecondsBeforeGC) secondsPerHeartbeat
   putStrLn "+ Heartbeat up"
-  let kingIO = join (broadcast <$> read state <*> read kingState)
-  broadcastTimer <- makeTimer kingIO secondsPerBroadcast
+
+  let broadcastIO =
+        join (broadcast <$> read state <*> (World <$> read state <*> read kingState))
+  broadcastTimer <-
+    makeTimer broadcastIO secondsPerBroadcast
   putStrLn "+ Broadcast up"
-  (`finally` (forM_ [heartbeatTimer, broadcastTimer, kingTimer] stopTimer)) application
+
+  scoringState <- C.newMVar M.empty
+  let scoringIO scores =
+        join (scoring <$> read kingState <*> read state <*> pure scores)
+  scoringTimer <-
+    makeTimer (modify scoringState scoringIO) secondsPerScoring
+  putStrLn "+ Scoring up"
+
+  let timers = [ heartbeatTimer
+               , broadcastTimer
+               , kingTimer
+               , scoringTimer
+               ]
+  (`finally` (forM_ timers stopTimer)) application
+
   where
     makeTimer io secs = repeatedTimer io (sDelay secs)
 
     secondsPerHeartbeat = 20
     secondsPerBroadcast = 1
     secondsPerKing = 5
+    secondsPerScoring = 1
     maxSecondsBeforeGC = secondsPerHeartbeat * 2
 
 
