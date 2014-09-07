@@ -55,21 +55,12 @@ modify = C.modifyMVar_
 ping :: WS.Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
 
-secondsPerBroadcast :: Int64
-secondsPerBroadcast = 1
-
-secondsPerHeartbeat :: Int64
-secondsPerHeartbeat = 20
-
-secondsPerKing :: Int64
-secondsPerKing = 5
-
-heartbeat :: DB -> IO DB
-heartbeat db =
+heartbeat :: Int64 -> DB -> IO DB
+heartbeat wait db =
   M.fromList <$> heartbeatFilterM (M.toList db)
   where
     delta =
-      secondsToUnixDiffTime (secondsPerHeartbeat * 2)
+      secondsToUnixDiffTime wait
     heartbeatFilterM =
       filterM $ \(player, (_, lastPongTime, conn)) -> do
         now <- getUnixTime
@@ -139,7 +130,7 @@ runTimers state application = do
   kingState <- C.newMVar (0, 0)
   kingTimer <- makeTimer (C.modifyMVar_ kingState $ const king) secondsPerKing
   putStrLn "+ King up"
-  heartbeatTimer <- makeTimer (modify state $ heartbeat) secondsPerHeartbeat
+  heartbeatTimer <- makeTimer (modify state $ heartbeat maxSecondsBeforeGC) secondsPerHeartbeat
   putStrLn "+ Heartbeat up"
   let kingIO = join (broadcast <$> read state <*> read kingState)
   broadcastTimer <- makeTimer kingIO secondsPerBroadcast
@@ -147,6 +138,12 @@ runTimers state application = do
   (`finally` (forM_ [heartbeatTimer, broadcastTimer, kingTimer] stopTimer)) application
   where
     makeTimer io secs = repeatedTimer io (sDelay secs)
+
+    secondsPerHeartbeat = 20
+    secondsPerBroadcast = 1
+    secondsPerKing = 5
+    maxSecondsBeforeGC = secondsPerHeartbeat * 2
+
 
 mainWithState :: MVar DB -> IO ()
 mainWithState state = do
