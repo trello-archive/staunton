@@ -13,5 +13,6 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b);
 @interface RACSignal (Helpers)
 
 - (RACSignal *)animated;
+- (RACDisposable *)subscribeLast:(void(^)(id))block;
 
 @end

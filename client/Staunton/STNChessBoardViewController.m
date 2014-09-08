@@ -96,10 +96,26 @@ static UIImageView *makeGravatarView(CGFloat size) {
                                              then:[RACSignal return:@5]
                                              else:[RACSignal return:@1]];
 
+    @weakify(self);
+    [dragSignal subscribeNext:^(RACSignal *drag) {
+        [drag subscribeLast:^(NSValue *center) {
+            @strongify(self);
+            if (center) {
+                CGPoint relative = [self relativePoint:center.CGPointValue];
+                [self.socket sendMessage:@{@"x": @(relative.x), @"y": @(relative.y)}];
+            }
+        }];
+    }];
+
     RAC(gravatarView, center) = [dragSignal switchToLatest];
 
     [self.view addSubview:gravatarView];
     self.myView = gravatarView;
+}
+
+- (CGPoint)relativePoint:(CGPoint)absolute {
+    return CGPointMake(absolute.x / self.view.bounds.size.width,
+                       absolute.y / self.view.bounds.size.height);
 }
 
 - (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
