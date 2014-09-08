@@ -136,6 +136,8 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
         }];
     }];
 
+#warning Exercise 2
+    // This shouldn't let you drag outside the chessboard!
     RAC(view, center) = [dragSignal switchToLatest];
 
     self.myView = view;
