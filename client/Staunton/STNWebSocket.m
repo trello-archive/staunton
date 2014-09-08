@@ -84,8 +84,10 @@
 - (void)handleWorldMessage:(NSArray *)people {
     // Here there be rampant inefficiencies. Ignore that part.
 
-    NSSet *emails = [NSSet setWithArray:[[people.rac_sequence map:^(NSArray *diffs) {
+    NSSet *emails = [NSSet setWithArray:[[[people.rac_sequence map:^(NSArray *diffs) {
         return diffs[0];
+    }] filter:^BOOL(NSString *email) {
+        return ![email isEqualToString:self.email];
     }] array]];
 
     NSMutableSet *emailsRemoved = [self.allEmails mutableCopy];
@@ -152,7 +154,7 @@
 }
 
 - (RACSignal *)playersPositionSignal {
-//    return self.playerDiffsSubject;
+    return self.playerDiffsSubject;
     NSString *hao = @"me@haolian.org";
     NSString *ian = @"foo@bar.com";
     
