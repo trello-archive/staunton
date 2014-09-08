@@ -210,9 +210,13 @@ mainWithState state = do
       renew
       return (onMove, onPong, onDisconnect)
       where
+        drug now (Just (loc, _, _)) =
+          Just (loc, now, conn)
+        drug now (Nothing) =
+          Just ((0, 0), now, conn)
         renew = modify state $ \db -> do
           now <- getUnixTime
-          return (M.insert player ((0, 0), now, conn) db)
+          return (M.alter (drug now) player db)
         onMove (Move to) = modify state $ \db -> do
           putStrLn ("+ Move from " <> show player <> ": " <> show to)
           now <- getUnixTime
