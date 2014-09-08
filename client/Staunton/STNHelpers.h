@@ -7,3 +7,11 @@
 //
 
 CGFloat randfloat();
+CGPoint CGPointAdd(CGPoint a, CGPoint b);
+CGPoint CGPointSubtract(CGPoint a, CGPoint b);
+
+@interface RACSignal (Helpers)
+
+- (RACSignal *)animated;
+
+@end

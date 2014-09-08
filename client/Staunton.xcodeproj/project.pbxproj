@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C3F7FBA19BD19A600F15BC4 /* STNWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C3F7FB919BD19A600F15BC4 /* STNWebSocket.m */; };
 		3CAF393719AA8A2B005BCEE7 /* STNDiff.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CAF393619AA8A2B005BCEE7 /* STNDiff.m */; };
 		3CAF393A19AA8F57005BCEE7 /* STNHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CAF393919AA8F57005BCEE7 /* STNHelpers.m */; };
 		3F0A13C219A375F400D98CC7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F0A13C119A375F400D98CC7 /* Foundation.framework */; };
@@ -24,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3C3F7FB819BD19A600F15BC4 /* STNWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNWebSocket.h; sourceTree = "<group>"; };
+		3C3F7FB919BD19A600F15BC4 /* STNWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNWebSocket.m; sourceTree = "<group>"; };
 		3CAF393519AA8A2B005BCEE7 /* STNDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNDiff.h; sourceTree = "<group>"; };
 		3CAF393619AA8A2B005BCEE7 /* STNDiff.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNDiff.m; sourceTree = "<group>"; };
 		3CAF393819AA8F57005BCEE7 /* STNHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNHelpers.h; sourceTree = "<group>"; };
@@ -151,6 +154,8 @@
 				3CAF393619AA8A2B005BCEE7 /* STNDiff.m */,
 				3F918BF919BAFE2300527079 /* FCTWebSocket.h */,
 				3F918BFA19BAFE2300527079 /* FCTWebSocket.m */,
+				3C3F7FB819BD19A600F15BC4 /* STNWebSocket.h */,
+				3C3F7FB919BD19A600F15BC4 /* STNWebSocket.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -255,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */,
+				3C3F7FBA19BD19A600F15BC4 /* STNWebSocket.m in Sources */,
 				3F9FD57B19A37A85001A5EDD /* STNChessBoardView.m in Sources */,
 				3F0A13D219A375F400D98CC7 /* STNAppDelegate.m in Sources */,
 				3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */,

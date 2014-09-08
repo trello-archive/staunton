@@ -1,7 +1,8 @@
 #import <UIKit/UIKit.h>
+#import "STNWebSocket.h"
 
 @interface STNChessBoardViewController : UIViewController
 
-- (instancetype)initWithDiffSignal:(RACSignal *)diffSignal;
+- (instancetype)initWithSocket:(STNWebSocket *)socket;
 
 @end

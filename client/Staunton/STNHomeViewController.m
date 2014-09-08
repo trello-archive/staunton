@@ -1,7 +1,7 @@
 #import "STNHomeViewController.h"
 #import "STNChessBoardViewController.h"
 #import "STNDiff.h"
-#import "FCTWebSocket.h"
+#import "STNWebSocket.h"
 
 /// EXERCISE 0: FORMALITIES
 ///
@@ -15,24 +15,26 @@
 
 @property (strong, nonatomic) STNChessBoardViewController *boardController;
 @property (strong, nonatomic) UILabel *label;
-@property (strong, nonatomic) FCTWebSocket *socket;
-@property (strong, nonatomic) RACSubject *JSONSubject;
+@property (strong, nonatomic) STNWebSocket *socket;
 
 @end
 
 @implementation STNHomeViewController
 
 - (void)viewDidLoad {
+    [super viewDidLoad];
     [self prepareSocket];
-    [self prepareStateMachine];
 }
 
 - (void)prepareSocket {
     self.label = [[UILabel alloc] init];
     self.label.font = [UIFont fontWithName:@"Futura" size:18];
+}
 
-    self.JSONSubject = [RACSubject subject];
-    self.socket = [[FCTWebSocket alloc] initWithJSONSignal:self.JSONSubject];
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    STNWebSocket *socket = [STNWebSocket webSocketWithEmail:@"ianthehenry@gmail.com"];
 
     /// EXERCISE ONE: HELLO, REACTIVE COCOA
     ///
@@ -42,54 +44,16 @@
     ///
     /// Solution: git stash; git co 1
 
-    RAC(self, label.text) = [[self.socket.openedSignal map:^id(NSNumber *n) {
+    RAC(self, label.text) = [[socket.connectedSignal map:^id(NSNumber *n) {
         return n.boolValue ? @"+ WebSocket: connected ∰." : @"+ WebSocket: disconnected ☁.";
     }] startWith:@"+ WebSocket: initializing..."];
-}
 
-- (void)prepareStateMachine {
-    @weakify(self);
-    /// EXERCISE TWO: ACTION & REACTION
-    ///
-    /// Opening a socket is all and good, but we'd like to now register
-    /// ourselves with the server. And to do that we need to send a
-    /// little bit of JSON with our email address (which will only be
-    /// used to find a Gravatar).
-    NSDictionary *registration = @{@"email": @"me@haolian.org"};
+    self.boardController = [[STNChessBoardViewController alloc] initWithSocket:socket];
 
-    /// We want to execute the next bit of code:
-    ///
-    ///   [self.JSONSubject sendNext:registration];
-    ///
-    /// However, we only want to do it when the socket is opened. We
-    /// have self.socket.openedSignal. How do we make sure our code
-    /// runs only when the signal sends a @YES?
-    ///
-    /// Solution: git stash; git co 2
-    [[[self.socket.openedSignal ignore:@NO] take:1] subscribeNext:^(id x) {
-        @strongify(self);
-        [self.JSONSubject sendNext:registration];
-
-        RACSignal *onDisconnect = [[self.socket.openedSignal ignore:@YES] take:1];
-        [[self.socket.messageSignal takeUntil:onDisconnect] subscribeNext:^(NSDictionary *json) {
-            if (json[@"ping"]) {
-                [self.JSONSubject sendNext:@{@"pong": @YES}];
-            }
-        }];
-
-        [onDisconnect subscribeNext:^(id x) {
-            [self prepareStateMachine];
-        }];
-    }];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    RACSignal *diffSignal = [self fakeDiffSignal];
-    self.boardController = [[STNChessBoardViewController alloc] initWithDiffSignal:diffSignal];
-    
     CGFloat side = MIN(self.view.frameSizeHeight, self.view.frameSizeWidth);
-    self.boardController.view.frame = CGRectMake(0, [UIApplication sharedApplication].statusBarFrame.size.height, side, side);
+    self.boardController.view.frame = CGRectMake(0, 0, side, side);
+    self.boardController.view.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
+    self.boardController.view.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.view addSubview:self.boardController.view];
     [self.boardController didMoveToParentViewController:self];
 
@@ -97,22 +61,6 @@
     self.label.frame = CGRectMake(0, bottom, side, side);
     [self.view addSubview:self.label];
     self.label.frameSizeHeight = [self.label sizeThatFits:CGSizeMake(side, CGFLOAT_MAX)].height;
-
-    [self.socket start];
-}
-
-- (RACSignal *)fakeDiffSignal {
-    NSString *hao = @"me@haolian.org";
-    NSString *ian = @"ianthehenry@gmail.com";
-    
-    return [[[@[[[STNDiffInsert alloc] initWithEmail:hao point:CGPointMake(0.5, 0.25)],
-                [[STNDiffInsert alloc] initWithEmail:ian point:CGPointMake(0.5, 0.75)]]
-              rac_sequence] signalWithScheduler:[RACScheduler mainThreadScheduler]]
-            concat: [[RACSignal interval:2 onScheduler:[RACScheduler mainThreadScheduler]] map:^(id x) {
-        NSString *email = arc4random_uniform(2) ? hao : ian;
-        CGPoint point = CGPointMake(randfloat(), randfloat());
-        return [[STNDiffUpdate alloc] initWithEmail:email point:point];
-    }]];
 }
 
 @end
