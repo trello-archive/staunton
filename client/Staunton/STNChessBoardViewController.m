@@ -68,7 +68,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
     label.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:label];
     self.kingView = label;
-    RAC(self.kingView, center) = [self relativeToAbsolute:self.socket.kingPositionSignal];
+    RAC(self.kingView, center) = [[self relativeToAbsolute:self.socket.kingPositionSignal] animated];
 }
 
 - (RACSignal *)isDraggingSignal:(RACSignal *)dragSignal {
