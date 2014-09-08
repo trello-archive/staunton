@@ -56,13 +56,19 @@ static UIImageView *makeGravatarView(CGFloat size) {
 }
 
 - (void)prepareKingView {
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.gravatarSize, self.gravatarSize)];
+    CGFloat size = [self gravatarSize] * 1.2;
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, size, size)];
     label.text = @"♚";
     label.font = [UIFont systemFontOfSize:self.gravatarSize];
-    label.backgroundColor = [UIColor redColor];
+    label.backgroundColor = [UIColor whiteColor];
+    label.layer.cornerRadius = size * 0.5;
+    label.layer.borderWidth = 2;
+    label.layer.borderColor = UIColor.blackColor.CGColor;
+    label.layer.masksToBounds = YES;
     label.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:label];
     self.kingView = label;
+    RAC(self.kingView, center) = [self relativeToAbsolute:self.socket.kingPositionSignal];
 }
 
 - (RACSignal *)isDraggingSignal:(RACSignal *)dragSignal {
@@ -101,7 +107,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
         [drag subscribeLast:^(NSValue *center) {
             @strongify(self);
             if (center) {
-                CGPoint relative = [self relativePoint:center.CGPointValue];
+                CGPoint relative = [self absoluteToRelative:center.CGPointValue];
                 [self.socket sendMessage:@{@"x": @(relative.x), @"y": @(relative.y)}];
             }
         }];
@@ -113,12 +119,12 @@ static UIImageView *makeGravatarView(CGFloat size) {
     self.myView = gravatarView;
 }
 
-- (CGPoint)relativePoint:(CGPoint)absolute {
+- (CGPoint)absoluteToRelative:(CGPoint)absolute {
     return CGPointMake(absolute.x / self.view.bounds.size.width,
                        absolute.y / self.view.bounds.size.height);
 }
 
-- (RACSignal *)centerForPosition:(RACSignal *)positionSignal {
+- (RACSignal *)relativeToAbsolute:(RACSignal *)positionSignal {
     return [RACSignal combineLatest:@[RACObserve(self.view, bounds),
                                       positionSignal]
                              reduce:^(NSValue *boundsValue, NSValue *positionValue) {
@@ -199,7 +205,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
             return [NSValue valueWithCGPoint:diff.point];
         }];
 
-        RAC(gravatarView, center) = [[self centerForPosition:positionSignal] animated];
+        RAC(gravatarView, center) = [[self relativeToAbsolute:positionSignal] animated];
     }];
 
     [removals subscribeNext:^(id x) {

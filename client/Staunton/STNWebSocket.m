@@ -78,7 +78,7 @@
 }
 
 - (void)handleKingMessage:(NSArray *)king {
-
+    [self.kingSubject sendNext:[NSValue valueWithCGPoint:CGPointMake([king[0] floatValue], [king[1] floatValue])]];
 }
 
 - (void)handleWorldMessage:(NSArray *)people {
