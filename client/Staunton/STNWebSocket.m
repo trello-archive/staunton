@@ -47,7 +47,7 @@
     @weakify(self);
     [[[self.socket.openedSignal ignore:@NO] take:1] subscribeCompleted:^{
         @strongify(self);
-        [self sendMessage:@{@"email": self.email}];
+        [self sendMessage:@{@"email": self.email, @"x": @0.5, @"y": @0.5}];
         
         RACSignal *onDisconnect = [[self.socket.openedSignal ignore:@YES] take:1];
         

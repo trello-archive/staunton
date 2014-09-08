@@ -31,9 +31,10 @@ type DB = Map Player (Location, UnixTime, Connection)
 data World = World DB
 newtype Scoreboard = Scoreboard (Map Player Float)
 newtype King = King Location
+data Registration = Registration Player Location deriving (Show)
 
-instance A.FromJSON Player where
-  parseJSON (A.Object o) = Player <$> o A..: "email"
+instance A.FromJSON Registration where
+  parseJSON (A.Object o) = Registration <$> (Player <$> o A..: "email") <*> ((,) <$> o A..: "x" <*> o A..: "y")
   parseJSON _ = error "Invalid player"
 
 instance A.FromJSON Move where
@@ -126,7 +127,7 @@ scoring hill db scores = do
       sqrt ((x1 - x0) ^ two + (y1 - y0) ^ two)
     two = 2 :: Int -- :(
 
-dataflow :: (Player
+dataflow :: (Registration
              -> Connection
              -> IO (Move -> IO (), Pong -> IO (), IO ()))
             -> WS.PendingConnection -> IO ()
@@ -136,8 +137,8 @@ dataflow onConnect pending = do
   case A.decode initial of
    Nothing -> do
      putStrLn ("Invalid registration: " <> show initial)
-   Just player -> do
-     (onMove, onPong, onDisconnect) <- onConnect player conn
+   Just registration -> do
+     (onMove, onPong, onDisconnect) <- onConnect registration conn
      (void . (`finally` onDisconnect) . runMaybeT . forever) $ do
        message <- lift $ WS.receiveData conn
        case A.decode message of
@@ -217,8 +218,8 @@ mainWithState state didConnect didMove = do
   where
     server =
       runServer (dataflow application)
-    application player conn = do
-      putStrLn ("+ Connecting " <> show player)
+    application registration@(Registration player home)  conn = do
+      putStrLn ("+ Connecting " <> show registration)
       onConnect
       Ch.writeChan didConnect (player, conn)
       return (onMove, onPong, void onDisconnect)
@@ -226,7 +227,7 @@ mainWithState state didConnect didMove = do
         drug now (Just (loc, _, _)) =
           Just (loc, now, conn)
         drug now (Nothing) =
-          Just ((0, 0), now, conn)
+          Just (home, now, conn)
         renew = modify state $ \db -> do
           now <- getUnixTime
           return (M.alter (drug now) player db)
