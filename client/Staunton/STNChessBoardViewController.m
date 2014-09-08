@@ -48,16 +48,7 @@
 
 - (void)prepareKingView {
     CGFloat size = [self gravatarSize] * 1.2;
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, size, size)];
-    label.text = @"♚";
-    label.font = [UIFont systemFontOfSize:self.gravatarSize];
-    label.backgroundColor = [UIColor whiteColor];
-    label.layer.cornerRadius = size * 0.5;
-    label.layer.borderWidth = 2;
-    label.layer.borderColor = UIColor.blackColor.CGColor;
-    label.layer.masksToBounds = YES;
-    label.textAlignment = NSTextAlignmentCenter;
-    self.kingView = label;
+    self.kingView = [STNViewFactory makeKingViewWithSize:size];
     [self.view insertSubview:self.kingView belowSubview:self.myView];
     RAC(self.kingView, center) = [[self relativeToAbsolute:RACObserve(self.socket, kingPosition)] animated];
 }
