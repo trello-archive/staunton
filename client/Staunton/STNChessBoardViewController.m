@@ -14,7 +14,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     UIImageView *view = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size, size)];
     [view setImageWithGravatarEmailAddress:email
                           placeholderImage:nil
-                          defaultImageType:KHGravatarDefaultImageIdenticon
+                          defaultImageType:KHGravatarDefaultImageRetro
                               forceDefault:NO
                                     rating:KHGravatarRatingR];
     view.layer.cornerRadius = 0;
@@ -95,7 +95,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     RACSignal *dragSignal = [self signalForRecognizer:recognizer];
     RACSignal *isDragging = [self isDraggingSignal:dragSignal];
 
-    gravatarView.layer.borderColor = UIColor.blackColor.CGColor;
+    gravatarView.layer.borderColor = UIColor.whiteColor.CGColor;
     gravatarView.layer.borderWidth = 2;
 
     RAC(gravatarView.layer, shadowOffset) = [RACSignal if:isDragging
