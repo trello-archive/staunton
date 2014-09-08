@@ -155,17 +155,6 @@
 
 - (RACSignal *)playersPositionSignal {
     return self.playerDiffsSubject;
-    NSString *hao = @"me@haolian.org";
-    NSString *ian = @"foo@bar.com";
-    
-    return [[[@[[[STNDiffInsert alloc] initWithEmail:hao point:CGPointMake(0.5, 0.25)],
-                [[STNDiffInsert alloc] initWithEmail:ian point:CGPointMake(0.5, 0.75)]]
-              rac_sequence] signalWithScheduler:[RACScheduler mainThreadScheduler]]
-            concat: [[RACSignal interval:2 onScheduler:[RACScheduler mainThreadScheduler]] map:^(id x) {
-        NSString *email = arc4random_uniform(2) ? hao : ian;
-        CGPoint point = CGPointMake(randfloat(), randfloat());
-        return [[STNDiffUpdate alloc] initWithEmail:email point:point];
-    }]];
 }
 
 @end
