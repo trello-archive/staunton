@@ -87,6 +87,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
     [gravatarView setImageWithGravatarEmailAddress:self.socket.email];
 
     gravatarView.layer.borderColor = UIColor.whiteColor.CGColor;
+    gravatarView.layer.borderWidth = 2;
 
     RAC(gravatarView.layer, shadowOffset) = [RACSignal if:isDragging
                                              then:[RACSignal return:[NSValue valueWithCGSize:CGSizeMake(2, 2)]]
