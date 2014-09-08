@@ -4,7 +4,7 @@ import           BasePrelude hiding ((\\), finally, read)
 import           Control.Concurrent (MVar)
 import qualified Control.Concurrent as C
 import           Control.Concurrent.Suspend (sDelay)
-import           Control.Concurrent.Timer (repeatedTimer, stopTimer)
+import           Control.Concurrent.Timer (repeatedTimer, stopTimer, TimerIO)
 import           Control.Monad.Catch (finally)
 import           Control.Monad.Trans
 import           Control.Monad.Trans.Maybe
@@ -24,8 +24,9 @@ data Player = Player Email deriving (Eq, Ord, Show)
 data Move = Move Location deriving (Show)
 data Pong = Pong Bool
 type DB = Map Player (Location, UnixTime, WS.Connection)
-data World = World DB Location
+data World = World DB
 newtype Scoreboard = Scoreboard (Map Player Float)
+newtype King = King Location
 
 instance A.FromJSON Player where
   parseJSON (A.Object o) = Player <$> o A..: "email"
@@ -40,12 +41,15 @@ instance A.FromJSON Pong where
   parseJSON _ = error "Invalid pong"
 
 instance A.ToJSON World where
-  toJSON (World db kingLocation) =
+  toJSON (World db) =
     A.object [("world", A.toJSON tuples)]
     where
       tuples =
-        [(email, loc) | (Player email, (loc, _, _)) <- M.toList db] <>
-        [("king@aol.com", kingLocation)]
+        [(email, loc) | (Player email, (loc, _, _)) <- M.toList db]
+
+instance A.ToJSON King where
+  toJSON (King loc) =
+    A.object [("king", A.toJSON loc)]
 
 instance A.ToJSON Scoreboard where
   toJSON (Scoreboard scores) =
@@ -87,12 +91,13 @@ broadcast db obj =
     unicast (_, (_, _, conn)) =
       WS.sendTextData conn (A.encode obj)
 
-king :: IO Location
-king = do
+king :: DB -> IO Location
+king db = do
   x <- randomFloat
   y <- randomFloat
   let location = (x, y) :: Location
   putStrLn ("+ King moving to: " <> show location)
+  broadcast db (King location)
   return (x, y)
   where
     randomFloat = ((/ 1024) . fromIntegral) <$> getStdRandom limits
@@ -147,10 +152,13 @@ dataflow onConnect pending = do
     -- MaybeT IO monad, however, is quite delightful.
     unforever = mzero
 
-runTimers :: MVar DB -> IO () -> IO ()
-runTimers state application = do
-  kingState <- C.newMVar =<< king
-  kingTimer <- makeTimer (modify kingState $ const king) secondsPerKing
+makeTimers :: MVar DB -> IO [TimerIO]
+makeTimers state = do
+  king0 <- read state >>= king
+  kingState <- C.newMVar king0
+  let kingIO =
+        join (king <$> read state)
+  kingTimer <- makeTimer (modify kingState $ const kingIO) secondsPerKing
   putStrLn "+ King up"
 
   heartbeatTimer <-
@@ -158,7 +166,7 @@ runTimers state application = do
   putStrLn "+ Heartbeat up"
 
   let broadcastIO =
-        join (broadcast <$> read state <*> (World <$> read state <*> read kingState))
+        join (broadcast <$> read state <*> (World <$> read state))
   broadcastTimer <-
     makeTimer broadcastIO secondsPerBroadcast
   putStrLn "+ Broadcast up"
@@ -170,13 +178,11 @@ runTimers state application = do
     makeTimer (modify scoringState scoringIO) secondsPerScoring
   putStrLn "+ Scoring up"
 
-  let timers = [ heartbeatTimer
-               , broadcastTimer
-               , kingTimer
-               , scoringTimer
-               ]
-  (`finally` (forM_ timers stopTimer)) application
-
+  return [ heartbeatTimer
+         , broadcastTimer
+         , kingTimer
+         , scoringTimer
+         ]
   where
     makeTimer io secs = repeatedTimer io (sDelay secs)
 
@@ -189,8 +195,11 @@ runTimers state application = do
 
 mainWithState :: MVar DB -> IO ()
 mainWithState state = do
-  runTimers state $ runServer (dataflow application)
+  timers <- makeTimers state
+  (`finally` (forM_ timers stopTimer)) server
   where
+    server =
+      runServer (dataflow application)
     application player conn = do
       putStrLn ("+ Connecting " <> show player)
       renew

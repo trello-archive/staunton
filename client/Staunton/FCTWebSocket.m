@@ -195,7 +195,7 @@ typedef enum {
     
     NSUInteger location = [message rangeOfString:@"{"].location;
     if (location == NSNotFound) {
-        FCTWSLog(@"Dropping: %@", message);
+        FCTWSLog(@"☁☁☁ Dropping: %@", message);
         return;
     }
     
