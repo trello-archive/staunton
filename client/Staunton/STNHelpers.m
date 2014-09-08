@@ -42,4 +42,18 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
     return subject;
 }
 
+- (RACDisposable *)subscribeLast:(void(^)(id))block {
+    __block id val = nil;
+    RACCompoundDisposable *compound = [RACCompoundDisposable disposableWithBlock:^{
+
+    }];
+    [compound addDisposable:[self subscribeNext:^(id x) {
+        val = x;
+    }]];
+    [compound addDisposable:[self subscribeCompleted:^{
+        block(val);
+    }]];
+    return compound;
+}
+
 @end
