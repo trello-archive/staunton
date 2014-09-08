@@ -99,7 +99,7 @@
     [emailsChanged minusSet:emailsInserted];
 
     CGPoint(^locationFor)(NSString *email) = ^(NSString *email) {
-        NSArray *tuple = [[[emails.rac_sequence filter:^BOOL(NSArray *tuple) {
+        NSArray *tuple = [[[people.rac_sequence filter:^BOOL(NSArray *tuple) {
             return [tuple[0] isEqualToString:email];
         }] map:^(NSArray *tuple) {
             return tuple[1];
