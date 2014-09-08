@@ -11,6 +11,11 @@
 
 @end
 
+static CGFloat distanceBetween(CGPoint a, CGPoint b) {
+    return sqrtf(powf(a.x - b.x, 2) +
+                 powf(a.y - b.y, 2));
+}
+
 @implementation STNChessBoardViewController
 
 - (instancetype)initWithSocket:(STNWebSocket *)socket {
@@ -67,6 +72,8 @@
 
 - (UILabel *)scoreLabelWithFrame:(CGRect)frame {
     UILabel *scoreLabel = [STNViewFactory makeScoreLabelWithFrame:frame];
+#warning Exercise 1
+    // Let's make this dynamically update!
     scoreLabel.text = @"???";
     return scoreLabel;
 }
@@ -78,14 +85,15 @@
     view.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
     [view addSubview:gravatarView];
 
-    UILabel *scoreLabel = [self scoreLabelWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)];
-    [view addSubview:scoreLabel];
+    [view addSubview:[self scoreLabelWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)]];
 
     UILongPressGestureRecognizer *recognizer = [self addRecognizer:view];
     RACSignal *dragSignal = [self signalForRecognizer:recognizer];
     RACSignal *isDragging = [self isDraggingSignal:dragSignal];
 
-    gravatarView.layer.borderColor = UIColor.whiteColor.CGColor;
+#warning Exercise 2
+    // It would be cool if this showed a gray border when we were offline.
+    gravatarView.borderColor = [UIColor whiteColor];
     gravatarView.layer.borderWidth = 2;
 
     RAC(gravatarView.layer, shadowOffset) = [RACSignal if:isDragging
@@ -106,7 +114,16 @@
         }];
     }];
 
-#warning Exercise 2
+    UILabel *distanceLabel = [STNViewFactory makeScoreLabelWithFrame:CGRectMake(0, CGRectGetHeight(view.bounds) - 20, view.bounds.size.width, 20)];
+    distanceLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    [view addSubview:distanceLabel];
+
+#warning Exercise 3
+    // Alright, so we know that we get more points the closer we are to the king. But...
+    // how close are we to the king? Let's make this label update with our distance!
+    distanceLabel.text = @"";
+
+#warning Exercise 5 (mad extra credit)
     // This shouldn't let you drag outside the chessboard!
     RAC(view, center) = [dragSignal switchToLatest];
 

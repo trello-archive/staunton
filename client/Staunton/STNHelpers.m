@@ -20,7 +20,7 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
     return CGPointMake(a.x - b.x, a.y - b.y);
 }
 
-@implementation RACSignal (Helpers)
+@implementation RACSignal (STNHelpers)
 
 - (RACSignal *)animated {
     RACSubject *subject = [RACReplaySubject replaySubjectWithCapacity:1];
@@ -49,6 +49,18 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
     } completed:^{
         block(val);
     }];
+}
+
+@end
+
+@implementation UIView (STNHelpers)
+
+- (void)setBorderColor:(UIColor *)borderColor {
+    self.layer.borderColor = borderColor.CGColor;
+}
+
+- (UIColor *)borderColor {
+    return [UIColor colorWithCGColor:self.layer.borderColor];
 }
 
 @end

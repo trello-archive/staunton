@@ -10,7 +10,14 @@ CGFloat randfloat();
 CGPoint CGPointAdd(CGPoint a, CGPoint b);
 CGPoint CGPointSubtract(CGPoint a, CGPoint b);
 
-@interface RACSignal (Helpers)
+@interface UIView (STNHelpers)
+
+@property (nonatomic, copy) UIColor *borderColor;
+
+@end
+
+
+@interface RACSignal (STNHelpers)
 
 - (RACSignal *)animated;
 - (RACDisposable *)subscribeLast:(void(^)(id))block;
