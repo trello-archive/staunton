@@ -1,6 +1,7 @@
 #import "STNChessBoardViewController.h"
 #import "STNChessBoardView.h"
 #import "STNDiff.h"
+#import "STNViewFactory.h"
 
 @interface STNChessBoardViewController ()
 
@@ -9,23 +10,6 @@
 @property (strong, nonatomic) STNWebSocket *socket;
 
 @end
-
-static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
-    UIImageView *view = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size, size)];
-    [view setImageWithGravatarEmailAddress:email
-                          placeholderImage:nil
-                          defaultImageType:KHGravatarDefaultImageRetro
-                              forceDefault:NO
-                                    rating:KHGravatarRatingR];
-    view.layer.cornerRadius = 0;
-    view.layer.masksToBounds = NO;
-    view.layer.shadowColor = [UIColor blackColor].CGColor;
-    view.layer.shadowOffset = CGSizeZero;
-    view.layer.shadowOpacity = 0.5;
-    view.layer.shadowRadius = 2;
-    view.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:view.bounds cornerRadius:view.layer.cornerRadius].CGPath;
-    return view;
-}
 
 @implementation STNChessBoardViewController
 
@@ -105,7 +89,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
 }
 
 - (void)prepareMyView {
-    UIImageView *gravatarView = makeGravatarView(self.gravatarSize, self.socket.email);
+    UIImageView *gravatarView = [STNViewFactory makeGravatarViewWithSize:self.gravatarSize email:self.socket.email];
 
     UIView *view = [[UIView alloc] initWithFrame:gravatarView.frame];
     view.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
@@ -226,7 +210,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
             NSLog(@"dropping insertion of known email!");
             return;
         }
-        gravatarView = makeGravatarView(self.gravatarSize, email);
+        gravatarView = [STNViewFactory makeGravatarViewWithSize:self.gravatarSize email:email];
         [self.view insertSubview:gravatarView belowSubview:self.myView];
 
         RACSignal *positionSignal = [[[diffs takeUntil:removals] map:^(STNDiff *diff) {

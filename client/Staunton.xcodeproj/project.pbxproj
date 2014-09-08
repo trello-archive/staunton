@@ -17,6 +17,7 @@
 		3F0A13CE19A375F400D98CC7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F0A13CD19A375F400D98CC7 /* main.m */; };
 		3F0A13D219A375F400D98CC7 /* STNAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F0A13D119A375F400D98CC7 /* STNAppDelegate.m */; };
 		3F0A13D419A375F400D98CC7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3F0A13D319A375F400D98CC7 /* Images.xcassets */; };
+		3F30F80419BE42CE008CEF25 /* STNViewFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F30F80319BE42CE008CEF25 /* STNViewFactory.m */; };
 		3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */; };
 		3F918BFB19BAFE2300527079 /* FCTWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F918BFA19BAFE2300527079 /* FCTWebSocket.m */; };
 		3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */; };
@@ -43,6 +44,8 @@
 		3F0A13D119A375F400D98CC7 /* STNAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STNAppDelegate.m; sourceTree = "<group>"; };
 		3F0A13D319A375F400D98CC7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3F0A13DA19A375F400D98CC7 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		3F30F80219BE42CE008CEF25 /* STNViewFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNViewFactory.h; sourceTree = "<group>"; };
+		3F30F80319BE42CE008CEF25 /* STNViewFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNViewFactory.m; sourceTree = "<group>"; };
 		3F81210419A3779C00FA6DF7 /* STNHomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNHomeViewController.h; sourceTree = "<group>"; };
 		3F81210519A3779C00FA6DF7 /* STNHomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNHomeViewController.m; sourceTree = "<group>"; };
 		3F918BF919BAFE2300527079 /* FCTWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCTWebSocket.h; sourceTree = "<group>"; };
@@ -144,6 +147,8 @@
 			children = (
 				3F9FD57919A37A85001A5EDD /* STNChessBoardView.h */,
 				3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */,
+				3F30F80219BE42CE008CEF25 /* STNViewFactory.h */,
+				3F30F80319BE42CE008CEF25 /* STNViewFactory.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -264,6 +269,7 @@
 				3F81210619A3779C00FA6DF7 /* STNHomeViewController.m in Sources */,
 				3C3F7FBA19BD19A600F15BC4 /* STNWebSocket.m in Sources */,
 				3F9FD57B19A37A85001A5EDD /* STNChessBoardView.m in Sources */,
+				3F30F80419BE42CE008CEF25 /* STNViewFactory.m in Sources */,
 				3F0A13D219A375F400D98CC7 /* STNAppDelegate.m in Sources */,
 				3F9FD57719A37A58001A5EDD /* STNChessBoardViewController.m in Sources */,
 				3CAF393719AA8A2B005BCEE7 /* STNDiff.m in Sources */,
