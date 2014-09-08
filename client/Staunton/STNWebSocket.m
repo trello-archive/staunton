@@ -113,13 +113,13 @@
         }
     };
 
-    [[[[[emailsRemoved.rac_sequence map:^(NSString *email) {
+    [[[[[[emailsRemoved.rac_sequence map:^(NSString *email) {
         return [[STNDiffRemove alloc] initWithEmail:email point:CGPointZero];
     }] concat:[emailsInserted.rac_sequence map:^(NSString *email) {
         return [[STNDiffInsert alloc] initWithEmail:email point:locationFor(email)];
     }]] concat:[emailsChanged.rac_sequence map:^(NSString *email) {
         return [[STNDiffUpdate alloc] initWithEmail:email point:locationFor(email)];
-    }]] signal] subscribeNext:^(id x) {
+    }]] signal] deliverOn:[RACScheduler immediateScheduler]] subscribeNext:^(id x) {
         [self.playerDiffsSubject sendNext:x];
     }];
 
