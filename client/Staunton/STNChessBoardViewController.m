@@ -49,7 +49,9 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     [super viewWillAppear:animated];
 
     [self prepareMyView];
-    [self prepareKingView];
+    [[self.socket.kingPositionSignal take:1] subscribeCompleted:^{
+        [self prepareKingView];
+    }];
 
     @weakify(self);
     [[self.socket.playersPositionSignal groupBy:^(STNDiff *diff) {
@@ -71,8 +73,8 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     label.layer.borderColor = UIColor.blackColor.CGColor;
     label.layer.masksToBounds = YES;
     label.textAlignment = NSTextAlignmentCenter;
-    [self.view addSubview:label];
     self.kingView = label;
+    [self.view addSubview:self.kingView];
     RAC(self.kingView, center) = [[self relativeToAbsolute:self.socket.kingPositionSignal] animated];
 }
 
@@ -217,7 +219,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
         return diff.isRemove;
     }];
 
-    [insertions subscribeNext:^(id x) {
+    [insertions subscribeNext:^(STNDiff *insertion) {
         NSParameterAssert([NSThread isMainThread]);
         if (gravatarView != nil) {
             NSLog(@"dropping insertion of known email!");
@@ -226,9 +228,9 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
         gravatarView = makeGravatarView(self.gravatarSize, email);
         [self.view addSubview:gravatarView];
 
-        RACSignal *positionSignal = [[diffs takeUntil:removals] map:^(STNDiff *diff) {
+        RACSignal *positionSignal = [[[diffs takeUntil:removals] map:^(STNDiff *diff) {
             return [NSValue valueWithCGPoint:diff.point];
-        }];
+        }] startWith:[NSValue valueWithCGPoint:insertion.point]];
 
         RAC(gravatarView, center) = [[self relativeToAbsolute:positionSignal] animated];
     }];

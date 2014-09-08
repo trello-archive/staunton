@@ -29,7 +29,7 @@
     this.email = email;
     this.allEmails = [NSSet set];
     this.playerDiffsSubject = [RACSubject subject];
-    this.kingSubject = [RACSubject subject];
+    this.kingSubject = [RACReplaySubject replaySubjectWithCapacity:1];
     this.scoreSubject = [RACSubject subject];
 
     RACSignal *messages = [[this rac_signalForSelector:@selector(sendMessage:)] reduceEach:^(id first) {
