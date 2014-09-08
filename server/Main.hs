@@ -3,6 +3,8 @@
 import           BasePrelude hiding ((\\), finally, read)
 import           Control.Concurrent (MVar)
 import qualified Control.Concurrent as C
+import           Control.Concurrent.Chan (Chan)
+import qualified Control.Concurrent.Chan as Ch
 import           Control.Concurrent.Suspend (sDelay)
 import           Control.Concurrent.Timer (repeatedTimer, stopTimer, TimerIO)
 import           Control.Monad.Catch (finally)
@@ -14,6 +16,7 @@ import qualified Data.Map as M
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.UnixTime (UnixTime, getUnixTime, secondsToUnixDiffTime, diffUnixTime)
+import           Network.WebSockets (Connection)
 import qualified Network.WebSockets as WS
 import           System.IO
 import           System.IO.Streams.Attoparsec (ParseException)
@@ -24,7 +27,7 @@ type Location = (Float, Float)
 data Player = Player Email deriving (Eq, Ord, Show)
 data Move = Move Location deriving (Show)
 data Pong = Pong Bool
-type DB = Map Player (Location, UnixTime, WS.Connection)
+type DB = Map Player (Location, UnixTime, Connection)
 data World = World DB
 newtype Scoreboard = Scoreboard (Map Player Float)
 newtype King = King Location
@@ -64,7 +67,7 @@ read = C.readMVar
 modify :: MVar a -> (a -> IO a) -> IO ()
 modify = C.modifyMVar_
 
-ping :: WS.Connection -> IO ()
+ping :: Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
 
 heartbeat :: Int64 -> DB -> IO DB
@@ -122,7 +125,7 @@ scoring hill db scores = do
     two = 2 :: Int -- :(
 
 dataflow :: (Player
-             -> WS.Connection
+             -> Connection
              -> IO (Move -> IO (), Pong -> IO (), IO ()))
             -> WS.PendingConnection -> IO ()
 dataflow onConnect pending = do
@@ -153,13 +156,19 @@ dataflow onConnect pending = do
     -- MaybeT IO monad, however, is quite delightful.
     unforever = mzero
 
-makeTimers :: MVar DB -> IO [TimerIO]
-makeTimers state = do
+makeTimers :: MVar DB -> Chan (Player, Connection) -> IO [TimerIO]
+makeTimers state didConnect = do
   king0 <- read state >>= king
   kingState <- C.newMVar king0
   let kingIO =
         join (king <$> read state)
-  kingTimer <- makeTimer (modify kingState $ const kingIO) secondsPerKing
+  kingTimer <-
+    makeTimer (modify kingState $ const kingIO) secondsPerKing
+  _ <- forkIO $ do
+    connects <- Ch.getChanContents didConnect
+    (`mapM_` connects) $ \(_, conn) -> do
+      loc <- read kingState
+      WS.sendTextData conn (A.encode (King loc))
   putStrLn "+ King up"
 
   heartbeatTimer <-
@@ -194,29 +203,34 @@ makeTimers state = do
     maxSecondsBeforeGC = secondsPerHeartbeat * 2
 
 
-mainWithState :: MVar DB -> IO ()
-mainWithState state = do
-  timers <- makeTimers state
+mainWithState :: MVar DB -> Chan (Player, Connection) -> IO ()
+mainWithState state didConnect = do
+  timers <- makeTimers state didConnect
   (`finally` (forM_ timers stopTimer)) server
   where
     server =
       runServer (dataflow application)
     application player conn = do
       putStrLn ("+ Connecting " <> show player)
-      read state >>= \db -> do
-        case (player, M.lookup player db) of
-         (Player email, Just _) -> error ("This email address is already taken: " <> T.unpack email)
-         (_, Nothing) -> return ()
-      renew
+      onConnect
+      Ch.writeChan didConnect (player, conn)
       return (onMove, onPong, onDisconnect)
       where
         drug now (Just (loc, _, _)) =
           Just (loc, now, conn)
         drug now (Nothing) =
           Just ((0, 0), now, conn)
-        renew = modify state $ \db -> do
+        renew = C.modifyMVar state $ \db -> do
           now <- getUnixTime
-          return (M.alter (drug now) player db)
+          return (db, M.alter (drug now) player db)
+        onConnect = do
+          putStrLn "+ My goodness"
+          read state >>= \db -> do
+            case (player, M.lookup player db) of
+             (Player email, Just _) -> error ("This email address is already taken: " <> T.unpack email)
+             (_, Nothing) -> return ()
+            db' <- renew
+            WS.sendTextData conn (A.encode (World db'))
         onMove (Move to) = modify state $ \db -> do
           putStrLn ("+ Move from " <> show player <> ": " <> show to)
           now <- getUnixTime
@@ -225,7 +239,7 @@ mainWithState state = do
           putStrLn ("+ Disconnecting " <> show player)
           return (M.delete player db)
         onPong _ = do
-          renew
+          void renew
 
 runServer :: (WS.PendingConnection -> IO ()) -> IO ()
 runServer server = do
@@ -250,4 +264,5 @@ main :: IO ()
 main = do
   hSetBuffering stdout LineBuffering
   state <- C.newMVar (M.empty)
-  mainWithState state
+  didConnect <- Ch.newChan
+  mainWithState state didConnect
