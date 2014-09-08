@@ -196,6 +196,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     }];
 
     [insertions subscribeNext:^(id x) {
+        NSParameterAssert([NSThread isMainThread]);
         if (gravatarView != nil) {
             NSLog(@"dropping insertion of known email!");
             return;

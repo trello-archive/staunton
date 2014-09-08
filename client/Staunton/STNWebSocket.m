@@ -82,6 +82,7 @@
 }
 
 - (void)handleWorldMessage:(NSArray *)people {
+    NSParameterAssert([NSThread isMainThread]);
     // Here there be rampant inefficiencies. Ignore that part.
 
     NSSet *emails = [NSSet setWithArray:[[[people.rac_sequence map:^(NSArray *diffs) {
@@ -113,15 +114,15 @@
         }
     };
 
-    [[[[[[emailsRemoved.rac_sequence map:^(NSString *email) {
+    for (STNDiff *diff in [[[emailsRemoved.rac_sequence map:^(NSString *email) {
         return [[STNDiffRemove alloc] initWithEmail:email point:CGPointZero];
     }] concat:[emailsInserted.rac_sequence map:^(NSString *email) {
         return [[STNDiffInsert alloc] initWithEmail:email point:locationFor(email)];
     }]] concat:[emailsChanged.rac_sequence map:^(NSString *email) {
         return [[STNDiffUpdate alloc] initWithEmail:email point:locationFor(email)];
-    }]] signal] deliverOn:[RACScheduler immediateScheduler]] subscribeNext:^(id x) {
-        [self.playerDiffsSubject sendNext:x];
-    }];
+    }]]) {
+        [self.playerDiffsSubject sendNext:diff];
+    }
 
     self.allEmails = emails;
 }
