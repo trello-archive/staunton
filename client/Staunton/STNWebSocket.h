@@ -16,6 +16,7 @@
 @property (nonatomic, readonly, copy) NSString *email;
 @property (nonatomic, readonly, assign) BOOL connected;
 @property (nonatomic, readonly, assign) double score;
+@property (nonatomic, readonly, assign) NSOrderedSet *scores;
 @property (nonatomic, readonly, assign) CGPoint kingPosition;
 
 - (RACSignal *)playersPositionSignal; // of STNDiff

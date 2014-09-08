@@ -16,6 +16,7 @@
 @property (nonatomic, assign, readwrite) BOOL connected;
 @property (nonatomic, assign, readwrite) CGPoint kingPosition;
 @property (nonatomic, assign, readwrite) double score;
+@property (nonatomic, strong, readwrite) NSOrderedSet *scores;
 @property (nonatomic, strong) RACSubject *playerDiffsSubject;
 
 @property (nonatomic, strong) NSSet *allEmails;
@@ -31,6 +32,7 @@
     this.email = email;
     this.allEmails = [NSSet set];
     this.playerDiffsSubject = [RACSubject subject];
+    this.scores = [NSOrderedSet orderedSet];
 
     RACSignal *messages = [[this rac_signalForSelector:@selector(sendMessage:)] reduceEach:^(id first) {
         return first;
@@ -136,6 +138,10 @@
     if (myScore) {
         self.score = [myScore[1] doubleValue];
     }
+
+    self.scores = [NSOrderedSet orderedSetWithArray:[[[score.rac_sequence map:^id(NSArray *tuple) {
+        return tuple[1];
+    }] array] sortedArrayUsingSelector:@selector(compare:)]];
 }
 
 - (void)sendMessage:(NSDictionary *)message {
