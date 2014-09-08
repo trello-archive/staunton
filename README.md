@@ -10,7 +10,7 @@ First, we'll just talk at you:
 
 We expect to run through these topics very quickly because we want to get to the interactive portion of the talk.
 
-Then! We'd like everybody to clonis the GitHub repository. Everybody begins with a boring single-user chess board but leaves with *a working WebSockets-powered multiplayer chess game*. We'll cover
+Then! We'd like everybody to clone the GitHub repository. Everybody will begin with a boring single-user chess board but leave with *a working WebSockets-powered multiplayer chess game*. We'll cover:
 
 * Signals and views: experience the future of programming in one line of code
 * `take` and `equals`: simple combinators, but enough to implement a networking state machine
