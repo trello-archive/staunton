@@ -13,6 +13,10 @@
 
 @property (nonatomic, strong) FCTWebSocket *socket;
 @property (nonatomic, copy, readwrite) NSString *email;
+@property (nonatomic, strong) NSSet *allEmails;
+@property (nonatomic, strong) RACSubject *playerDiffsSubject;
+@property (nonatomic, strong) RACSubject *kingSubject;
+@property (nonatomic, strong) RACSubject *scoreSubject;
 
 @end
 
@@ -23,7 +27,11 @@
     
     STNWebSocket *this = [[STNWebSocket alloc] init];
     this.email = email;
-    
+    this.allEmails = [NSSet set];
+    this.playerDiffsSubject = [RACSubject subject];
+    this.kingSubject = [RACSubject subject];
+    this.scoreSubject = [RACSubject subject];
+
     RACSignal *messages = [[this rac_signalForSelector:@selector(sendMessage:)] reduceEach:^(id first) {
         return first;
     }];
@@ -58,7 +66,66 @@
 }
 
 - (void)handleMessage:(NSDictionary *)json {
-    NSLog(@"%@", json);
+    if (json[@"world"]) {
+        [self handleWorldMessage:json[@"world"]];
+    }
+    if (json[@"king"]) {
+        [self handleKingMessage:json[@"king"]];
+    }
+    if (json[@"scoreboard"]) {
+        [self handleScoreMessage:json[@"scoreboard"]];
+    }
+}
+
+- (void)handleKingMessage:(NSArray *)king {
+
+}
+
+- (void)handleWorldMessage:(NSArray *)people {
+    // Here there be rampant inefficiencies. Ignore that part.
+
+    NSSet *emails = [NSSet setWithArray:[[people.rac_sequence map:^(NSArray *diffs) {
+        return diffs[0];
+    }] array]];
+
+    NSMutableSet *emailsRemoved = [self.allEmails mutableCopy];
+    [emailsRemoved minusSet:emails];
+
+    NSMutableSet *emailsInserted = [emails mutableCopy];
+    [emailsInserted minusSet:self.allEmails];
+
+    NSMutableSet *emailsChanged = [emails mutableCopy];
+    [emailsChanged minusSet:emailsRemoved];
+    [emailsChanged minusSet:emailsInserted];
+
+    CGPoint(^locationFor)(NSString *email) = ^(NSString *email) {
+        NSArray *tuple = [[[emails.rac_sequence filter:^BOOL(NSArray *tuple) {
+            return [tuple[0] isEqualToString:email];
+        }] map:^(NSArray *tuple) {
+            return tuple[1];
+        }] head];
+        if (tuple == nil) {
+            return CGPointZero;
+        } else {
+            return CGPointMake([tuple[0] floatValue], [tuple[1] floatValue]);
+        }
+    };
+
+    [[[[[emailsRemoved.rac_sequence map:^(NSString *email) {
+        return [[STNDiffRemove alloc] initWithEmail:email point:CGPointZero];
+    }] concat:[emailsInserted.rac_sequence map:^(NSString *email) {
+        return [[STNDiffInsert alloc] initWithEmail:email point:locationFor(email)];
+    }]] concat:[emailsChanged.rac_sequence map:^(NSString *email) {
+        return [[STNDiffUpdate alloc] initWithEmail:email point:locationFor(email)];
+    }]] signal] subscribeNext:^(id x) {
+        [self.playerDiffsSubject sendNext:x];
+    }];
+
+    self.allEmails = emails;
+}
+
+- (void)handleScoreMessage:(NSArray *)score {
+
 }
 
 - (RACSignal *)connectedSignal {
@@ -66,11 +133,11 @@
 }
 
 - (RACSignal *)scoreSignal {
-    return nil;
+    return self.scoreSubject;
 }
 
 - (RACSignal *)kingPositionSignal {
-    return nil;
+    return self.kingSubject;
 }
 
 - (void)sendMessage:(NSDictionary *)message {
@@ -85,6 +152,7 @@
 }
 
 - (RACSignal *)playersPositionSignal {
+//    return self.playerDiffsSubject;
     NSString *hao = @"me@haolian.org";
     NSString *ian = @"foo@bar.com";
     
