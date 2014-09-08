@@ -64,8 +64,10 @@ instance A.ToJSON Scoreboard where
 read :: MVar a -> IO a
 read = C.readMVar
 
-modify :: MVar a -> (a -> IO a) -> IO ()
-modify = C.modifyMVar_
+modify :: MVar a -> (a -> IO a) -> IO a
+modify m f = C.modifyMVar m $ \x -> do
+  y <- f x
+  return (y, y)
 
 ping :: Connection -> IO ()
 ping conn = WS.sendTextData conn ("{\"ping\": true}" :: Text)
@@ -156,14 +158,17 @@ dataflow onConnect pending = do
     -- MaybeT IO monad, however, is quite delightful.
     unforever = mzero
 
-makeTimers :: MVar DB -> Chan (Player, Connection) -> IO [TimerIO]
-makeTimers state didConnect = do
+makeTimers :: MVar DB ->
+              Chan (Player, Connection) ->
+              Chan (Player, Connection) ->
+              IO [TimerIO]
+makeTimers state didConnect didMove = do
   king0 <- read state >>= king
   kingState <- C.newMVar king0
   let kingIO =
         join (king <$> read state)
   kingTimer <-
-    makeTimer (modify kingState $ const kingIO) secondsPerKing
+    makeTimer (void . modify kingState $ const kingIO) secondsPerKing
   _ <- forkIO $ do
     connects <- Ch.getChanContents didConnect
     (`mapM_` connects) $ \(_, conn) -> do
@@ -172,24 +177,24 @@ makeTimers state didConnect = do
   putStrLn "+ King up"
 
   heartbeatTimer <-
-    makeTimer (modify state $ heartbeat maxSecondsBeforeGC) secondsPerHeartbeat
+    makeTimer (void . modify state $ heartbeat maxSecondsBeforeGC) secondsPerHeartbeat
   putStrLn "+ Heartbeat up"
 
-  let broadcastIO =
-        join (broadcast <$> read state <*> (World <$> read state))
-  broadcastTimer <-
-    makeTimer broadcastIO secondsPerBroadcast
+  _ <- forkIO $ do
+    moves <- Ch.getChanContents didMove
+    (`mapM_` moves) $ \(_, _) -> do
+      db <- read state
+      broadcast db (World db)
   putStrLn "+ Broadcast up"
 
   scoringState <- C.newMVar M.empty
   let scoringIO scores =
         join (scoring <$> read kingState <*> read state <*> pure scores)
   scoringTimer <-
-    makeTimer (modify scoringState scoringIO) secondsPerScoring
+    makeTimer (void (modify scoringState scoringIO)) secondsPerScoring
   putStrLn "+ Scoring up"
 
   return [ heartbeatTimer
-         , broadcastTimer
          , kingTimer
          , scoringTimer
          ]
@@ -197,15 +202,17 @@ makeTimers state didConnect = do
     makeTimer io secs = repeatedTimer io (sDelay secs)
 
     secondsPerHeartbeat = 20
-    secondsPerBroadcast = 1
     secondsPerKing = 5
     secondsPerScoring = 1
     maxSecondsBeforeGC = secondsPerHeartbeat * 2
 
 
-mainWithState :: MVar DB -> Chan (Player, Connection) -> IO ()
-mainWithState state didConnect = do
-  timers <- makeTimers state didConnect
+mainWithState :: MVar DB ->
+                 Chan (Player, Connection) ->
+                 Chan (Player, Connection) ->
+                 IO ()
+mainWithState state didConnect didMove = do
+  timers <- makeTimers state didConnect didMove
   (`finally` (forM_ timers stopTimer)) server
   where
     server =
@@ -214,27 +221,28 @@ mainWithState state didConnect = do
       putStrLn ("+ Connecting " <> show player)
       onConnect
       Ch.writeChan didConnect (player, conn)
-      return (onMove, onPong, onDisconnect)
+      return (onMove, onPong, void onDisconnect)
       where
         drug now (Just (loc, _, _)) =
           Just (loc, now, conn)
         drug now (Nothing) =
           Just ((0, 0), now, conn)
-        renew = C.modifyMVar state $ \db -> do
+        renew = modify state $ \db -> do
           now <- getUnixTime
-          return (db, M.alter (drug now) player db)
+          return (M.alter (drug now) player db)
         onConnect = do
-          putStrLn "+ My goodness"
           read state >>= \db -> do
             case (player, M.lookup player db) of
              (Player email, Just _) -> error ("This email address is already taken: " <> T.unpack email)
              (_, Nothing) -> return ()
             db' <- renew
             WS.sendTextData conn (A.encode (World db'))
-        onMove (Move to) = modify state $ \db -> do
-          putStrLn ("+ Move from " <> show player <> ": " <> show to)
-          now <- getUnixTime
-          return (M.insert player (to, now, conn) db)
+        onMove (Move to) = do
+          _ <- modify state $ \db -> do
+            putStrLn ("+ Move from " <> show player <> ": " <> show to)
+            now <- getUnixTime
+            return (M.insert player (to, now, conn) db)
+          Ch.writeChan didMove (player, conn)
         onDisconnect = modify state $ \db -> do
           putStrLn ("+ Disconnecting " <> show player)
           return (M.delete player db)
@@ -265,4 +273,5 @@ main = do
   hSetBuffering stdout LineBuffering
   state <- C.newMVar (M.empty)
   didConnect <- Ch.newChan
-  mainWithState state didConnect
+  didMove <- Ch.newChan
+  mainWithState state didConnect didMove
