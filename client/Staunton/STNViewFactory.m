@@ -40,4 +40,14 @@
     return label;
 }
 
++ (UILabel *)makeScoreLabelWithFrame:(CGRect)frame {
+    UILabel *scoreLabel = [[UILabel alloc] initWithFrame:frame];
+    scoreLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+    scoreLabel.textAlignment = NSTextAlignmentCenter;
+    scoreLabel.font = [UIFont fontWithName:@"Menlo" size:10];
+    scoreLabel.shadowOffset = CGSizeMake(0, -1);
+    scoreLabel.shadowColor = [UIColor colorWithWhite:1 alpha:0.5];
+    return scoreLabel;
+}
+
 @end

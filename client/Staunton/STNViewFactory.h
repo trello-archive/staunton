@@ -12,5 +12,6 @@
 
 + (UIImageView *)makeGravatarViewWithSize:(CGFloat)size email:(NSString *)email;
 + (UILabel *)makeKingViewWithSize:(CGFloat)size;
++ (UILabel *)makeScoreLabelWithFrame:(CGRect)frame;
 
 @end

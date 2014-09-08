@@ -66,16 +66,8 @@
 }
 
 - (UILabel *)scoreLabelWithFrame:(CGRect)frame {
-    UILabel *scoreLabel = [[UILabel alloc] initWithFrame:frame];
-    scoreLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
-    scoreLabel.textAlignment = NSTextAlignmentCenter;
-    scoreLabel.font = [UIFont fontWithName:@"Menlo" size:10];
-    scoreLabel.shadowOffset = CGSizeMake(0, -1);
-    scoreLabel.shadowColor = [UIColor colorWithWhite:1 alpha:0.5];
-
-#warning Exercise 1
+    UILabel *scoreLabel = [STNViewFactory makeScoreLabelWithFrame:frame];
     scoreLabel.text = @"???";
-
     return scoreLabel;
 }
 
