@@ -15,7 +15,6 @@
 @interface STNHomeViewController ()
 
 @property (strong, nonatomic) STNChessBoardViewController *boardController;
-@property (strong, nonatomic) UILabel *label;
 @property (strong, nonatomic) STNWebSocket *socket;
 @property (strong, nonatomic) UITextView *textView;
 @property (strong, nonatomic) UILabel *countLabel;
@@ -26,12 +25,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self prepareSocket];
-}
-
-- (void)prepareSocket {
-    self.label = [[UILabel alloc] init];
-    self.label.font = [UIFont fontWithName:@"Futura" size:18];
 }
 
 - (void)viewWillAppearHide:(BOOL)animated {
@@ -59,18 +52,6 @@
 
     STNWebSocket *socket = [STNWebSocket webSocketWithEmail:stn_email()];
 
-    /// EXERCISE ONE: HELLO, REACTIVE COCOA
-    ///
-    /// As self.socket.openedSignal sends you @YESes and @NOs, please
-    /// reactively update self.label.text. This will give you a fun and,
-    /// more importantly, useful indicator of the server status.
-    ///
-    /// Solution: git stash; git co 1
-
-    RAC(self, label.text) = [[socket.connectedSignal map:^id(NSNumber *n) {
-        return n.boolValue ? @"+ WebSocket: connected ∰." : @"+ WebSocket: disconnected ☁.";
-    }] startWith:@"+ WebSocket: initializing..."];
-
     self.boardController = [[STNChessBoardViewController alloc] initWithSocket:socket];
 
     CGFloat side = MIN(self.view.frameSizeHeight, self.view.frameSizeWidth);
@@ -79,11 +60,6 @@
     self.boardController.view.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.view addSubview:self.boardController.view];
     [self.boardController didMoveToParentViewController:self];
-
-    CGFloat bottom = self.boardController.view.frameOriginY + self.boardController.view.frameSizeHeight;
-    self.label.frame = CGRectMake(0, bottom, side, side);
-    [self.view addSubview:self.label];
-    self.label.frameSizeHeight = [self.label sizeThatFits:CGSizeMake(side, CGFLOAT_MAX)].height;
 }
 
 @end

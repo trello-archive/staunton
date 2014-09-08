@@ -13,10 +13,12 @@
 
 @property (nonatomic, strong) FCTWebSocket *socket;
 @property (nonatomic, copy, readwrite) NSString *email;
-@property (nonatomic, strong) NSSet *allEmails;
+@property (nonatomic, assign, readwrite) BOOL connected;
+@property (nonatomic, assign, readwrite) CGPoint kingPosition;
+@property (nonatomic, assign, readwrite) double score;
 @property (nonatomic, strong) RACSubject *playerDiffsSubject;
-@property (nonatomic, strong) RACSubject *kingSubject;
-@property (nonatomic, strong) RACSubject *scoreSubject;
+
+@property (nonatomic, strong) NSSet *allEmails;
 
 @end
 
@@ -29,8 +31,6 @@
     this.email = email;
     this.allEmails = [NSSet set];
     this.playerDiffsSubject = [RACSubject subject];
-    this.kingSubject = [RACReplaySubject replaySubjectWithCapacity:1];
-    this.scoreSubject = [RACSubject subject];
 
     RACSignal *messages = [[this rac_signalForSelector:@selector(sendMessage:)] reduceEach:^(id first) {
         return first;
@@ -39,6 +39,7 @@
     this.socket = [[FCTWebSocket alloc] initWithJSONSignal:messages];
     [this handleDisconnects];
     [this.socket start];
+    RAC(this, connected) = this.socket.openedSignal;
     
     return this;
 }
@@ -78,7 +79,7 @@
 }
 
 - (void)handleKingMessage:(NSArray *)king {
-    [self.kingSubject sendNext:[NSValue valueWithCGPoint:CGPointMake([king[0] floatValue], [king[1] floatValue])]];
+    self.kingPosition = CGPointMake([king[0] floatValue], [king[1] floatValue]);
 }
 
 - (void)handleWorldMessage:(NSArray *)people {
@@ -133,20 +134,8 @@
     }] head];
 
     if (myScore) {
-        [self.scoreSubject sendNext:myScore[1]];
+        self.score = [myScore[1] doubleValue];
     }
-}
-
-- (RACSignal *)connectedSignal {
-    return self.socket.openedSignal;
-}
-
-- (RACSignal *)scoreSignal {
-    return self.scoreSubject;
-}
-
-- (RACSignal *)kingPositionSignal {
-    return self.kingSubject;
 }
 
 - (void)sendMessage:(NSDictionary *)message {

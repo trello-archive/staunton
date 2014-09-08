@@ -49,7 +49,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     [super viewWillAppear:animated];
 
     [self prepareMyView];
-    [[self.socket.kingPositionSignal take:1] subscribeCompleted:^{
+    [[[RACObserve(self.socket, kingPosition) skip:1] take:1] subscribeCompleted:^{
         [self prepareKingView];
     }];
 
@@ -75,7 +75,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     label.textAlignment = NSTextAlignmentCenter;
     self.kingView = label;
     [self.view addSubview:self.kingView];
-    RAC(self.kingView, center) = [[self relativeToAbsolute:self.socket.kingPositionSignal] animated];
+    RAC(self.kingView, center) = [[self relativeToAbsolute:RACObserve(self.socket, kingPosition)] animated];
 }
 
 - (RACSignal *)isDraggingSignal:(RACSignal *)dragSignal {
