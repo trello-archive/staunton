@@ -9,7 +9,6 @@
 @property (nonatomic, readonly) BOOL isInsert, isUpdate, isRemove;
 
 - (instancetype)initWithEmail:(NSString *)email point:(CGPoint)point;
-- (void)visitWithInsertBlock:(void (^)(STNDiffInsert *))insertBlock removeBlock:(void (^)(STNDiffRemove *))removeBlock updateBlock:(void (^)(STNDiffUpdate *))updateBlock;
 
 @end
 
