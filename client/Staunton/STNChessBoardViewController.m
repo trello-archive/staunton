@@ -88,19 +88,27 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     return isDragging;
 }
 
+- (UILabel *)scoreLabelWithFrame:(CGRect)frame {
+    UILabel *scoreLabel = [[UILabel alloc] initWithFrame:frame];
+    scoreLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+    scoreLabel.textAlignment = NSTextAlignmentCenter;
+    scoreLabel.font = [UIFont fontWithName:@"Menlo" size:10];
+    scoreLabel.shadowOffset = CGSizeMake(0, -1);
+    scoreLabel.shadowColor = [UIColor colorWithWhite:1 alpha:0.5];
+
+#warning Exercise 1
+    scoreLabel.text = @"???";
+
+    return scoreLabel;
+}
+
 - (void)prepareMyView {
     UIImageView *gravatarView = makeGravatarView(self.gravatarSize, self.socket.email);
 
     UIView *view = [[UIView alloc] initWithFrame:gravatarView.frame];
     [view addSubview:gravatarView];
 
-    UILabel *scoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)];
-    scoreLabel.textAlignment = NSTextAlignmentCenter;
-#warning Exercise 1
-    scoreLabel.text = @"???";
-    scoreLabel.font = [UIFont fontWithName:@"Menlo" size:10];
-    scoreLabel.shadowOffset = CGSizeMake(0, -1);
-    scoreLabel.shadowColor = [UIColor colorWithWhite:1 alpha:0.5];
+    UILabel *scoreLabel = [self scoreLabelWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)];
     [view addSubview:scoreLabel];
 
     UILongPressGestureRecognizer *recognizer = [self addRecognizer:view];
