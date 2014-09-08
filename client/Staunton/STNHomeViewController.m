@@ -2,6 +2,7 @@
 #import "STNChessBoardViewController.h"
 #import "STNDiff.h"
 #import "STNWebSocket.h"
+#import "STNConfig.h"
 
 /// EXERCISE 0: FORMALITIES
 ///
@@ -34,7 +35,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    STNWebSocket *socket = [STNWebSocket webSocketWithEmail:@"ianthehenry@gmail.com"];
+    STNWebSocket *socket = [STNWebSocket webSocketWithEmail:stn_email()];
 
     /// EXERCISE ONE: HELLO, REACTIVE COCOA
     ///

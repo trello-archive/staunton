@@ -9,6 +9,7 @@
 #import <SocketRocket/SRWebSocket.h>
 #import <ReactiveCocoa/ReactiveCocoa.h>
 #import "FCTWebSocket.h"
+#import "STNConfig.h"
 
 static const NSUInteger FCT_DEBUG_WEB_SOCKETS = 1;
 
@@ -25,7 +26,7 @@ static void FCTWSLog(NSString *format, ...) {
 }
 
 static NSURL *stauntonServerURL(void) {
-    return [NSURL URLWithString:@"ws://localhost:9160/"];
+    return [NSURL URLWithString:stn_server()];
 }
 
 typedef enum {

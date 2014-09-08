@@ -51,6 +51,7 @@
 		3F9FD57619A37A58001A5EDD /* STNChessBoardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNChessBoardViewController.m; sourceTree = "<group>"; };
 		3F9FD57919A37A85001A5EDD /* STNChessBoardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STNChessBoardView.h; sourceTree = "<group>"; };
 		3F9FD57A19A37A85001A5EDD /* STNChessBoardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STNChessBoardView.m; sourceTree = "<group>"; };
+		3FD0DCA919BD491300977E75 /* STNConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STNConfig.h; sourceTree = "<group>"; };
 		740ECFD7EAF1411B8C120E31 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4FC5F0344C34E429470F492 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -156,6 +157,7 @@
 				3F918BFA19BAFE2300527079 /* FCTWebSocket.m */,
 				3C3F7FB819BD19A600F15BC4 /* STNWebSocket.h */,
 				3C3F7FB919BD19A600F15BC4 /* STNWebSocket.m */,
+				3FD0DCA919BD491300977E75 /* STNConfig.h */,
 			);
 			name = Models;
 			sourceTree = "<group>";
