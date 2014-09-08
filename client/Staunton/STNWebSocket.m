@@ -128,9 +128,13 @@
 }
 
 - (void)handleScoreMessage:(NSArray *)score {
-    [self.scoreSubject sendNext:[[score.rac_sequence filter:^BOOL(NSArray *tuple) {
+    NSArray *myScore = [[score.rac_sequence filter:^BOOL(NSArray *tuple) {
         return [tuple[0] isEqualToString:self.email];
-    }] head][1]];
+    }] head];
+
+    if (myScore) {
+        [self.scoreSubject sendNext:myScore[1]];
+    }
 }
 
 - (RACSignal *)connectedSignal {
