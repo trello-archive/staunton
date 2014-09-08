@@ -246,7 +246,9 @@ mainWithState state didConnect didMove = do
           Ch.writeChan didMove (player, conn)
         onDisconnect = modify state $ \db -> do
           putStrLn ("+ Disconnecting " <> show player)
-          return (M.delete player db)
+          let db' = M.delete player db
+          Ch.writeChan didMove (player, conn)
+          return db'
         onPong _ = do
           void renew
 
