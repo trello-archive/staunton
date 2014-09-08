@@ -17,6 +17,8 @@
 @property (strong, nonatomic) STNChessBoardViewController *boardController;
 @property (strong, nonatomic) UILabel *label;
 @property (strong, nonatomic) STNWebSocket *socket;
+@property (strong, nonatomic) UITextView *textView;
+@property (strong, nonatomic) UILabel *countLabel;
 
 @end
 
@@ -30,6 +32,26 @@
 - (void)prepareSocket {
     self.label = [[UILabel alloc] init];
     self.label.font = [UIFont fontWithName:@"Futura" size:18];
+}
+
+- (void)viewWillAppearHide:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.countLabel = [[UILabel alloc] init];
+    self.countLabel.frame = CGRectMake(0, 200, self.view.bounds.size.width, 100);
+    self.countLabel.textColor = [UIColor whiteColor];
+    [self.view addSubview:self.countLabel];
+
+    self.textView = [[UITextView alloc] init];
+    self.textView.frame = CGRectMake(0, 100, self.view.bounds.size.width, 100);
+    self.countLabel.font = self.textView.font = [UIFont systemFontOfSize:40];
+    [self.view addSubview:self.textView];
+    self.view.backgroundColor = [UIColor purpleColor];
+
+    RACSignal *countSignal = [self.textView.rac_textSignal map:^id(NSString *text) {
+        return [NSString stringWithFormat:@"%i", text.length];
+    }];
+    // self.countLabel.text is _always_ the value of countSignal
+    RAC(self.countLabel, text) = countSignal;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
