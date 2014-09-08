@@ -2,7 +2,7 @@
 #define STNCONFIG_H
 
 static inline NSString *stn_server() {
-    return @"ws://localhost:9160/";
+    return @"wss://ianthehenry.com/staunton/";
 }
 
 static inline NSString *stn_email() {
