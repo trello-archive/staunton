@@ -91,7 +91,19 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
 - (void)prepareMyView {
     UIImageView *gravatarView = makeGravatarView(self.gravatarSize, self.socket.email);
 
-    UILongPressGestureRecognizer *recognizer = [self addRecognizer:gravatarView];
+    UIView *view = [[UIView alloc] initWithFrame:gravatarView.frame];
+    [view addSubview:gravatarView];
+
+    UILabel *scoreLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)];
+    scoreLabel.textAlignment = NSTextAlignmentCenter;
+#warning Exercise 1
+    scoreLabel.text = @"???";
+    scoreLabel.font = [UIFont fontWithName:@"Menlo" size:10];
+    scoreLabel.shadowOffset = CGSizeMake(0, -1);
+    scoreLabel.shadowColor = [UIColor colorWithWhite:1 alpha:0.5];
+    [view addSubview:scoreLabel];
+
+    UILongPressGestureRecognizer *recognizer = [self addRecognizer:view];
     RACSignal *dragSignal = [self signalForRecognizer:recognizer];
     RACSignal *isDragging = [self isDraggingSignal:dragSignal];
 
@@ -116,10 +128,10 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
         }];
     }];
 
-    RAC(gravatarView, center) = [dragSignal switchToLatest];
+    RAC(view, center) = [dragSignal switchToLatest];
 
-    [self.view addSubview:gravatarView];
-    self.myView = gravatarView;
+    self.myView = view;
+    [self.view addSubview:self.myView];
 }
 
 - (CGPoint)absoluteToRelative:(CGPoint)absolute {
