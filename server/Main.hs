@@ -12,6 +12,7 @@ import qualified Data.Aeson as A
 import           Data.Map (Map)
 import qualified Data.Map as M
 import           Data.Text (Text)
+import qualified Data.Text as T
 import           Data.UnixTime (UnixTime, getUnixTime, secondsToUnixDiffTime, diffUnixTime)
 import qualified Network.WebSockets as WS
 import           System.IO
@@ -202,6 +203,10 @@ mainWithState state = do
       runServer (dataflow application)
     application player conn = do
       putStrLn ("+ Connecting " <> show player)
+      read state >>= \db -> do
+        case (player, M.lookup player db) of
+         (Player email, Just _) -> error ("This email address is already taken: " <> T.unpack email)
+         (_, Nothing) -> return ()
       renew
       return (onMove, onPong, onDisconnect)
       where
