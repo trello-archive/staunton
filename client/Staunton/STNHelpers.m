@@ -29,13 +29,9 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
         [UIView animateWithDuration:0.25 animations:^{
             [subject sendNext:x];
         }];
-    }];
-    
-    [self subscribeError:^(NSError *error) {
+    } error:^(NSError *error) {
         [subject sendError:error];
-    }];
-    
-    [self subscribeCompleted:^{
+    } completed:^{
         [subject sendCompleted];
     }];
     
@@ -44,16 +40,11 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
 
 - (RACDisposable *)subscribeLast:(void(^)(id))block {
     __block id val = nil;
-    RACCompoundDisposable *compound = [RACCompoundDisposable disposableWithBlock:^{
-
-    }];
-    [compound addDisposable:[self subscribeNext:^(id x) {
+    return [self subscribeNext:^(id x) {
         val = x;
-    }]];
-    [compound addDisposable:[self subscribeCompleted:^{
+    } completed:^{
         block(val);
-    }]];
-    return compound;
+    }];
 }
 
 @end
