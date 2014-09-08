@@ -42,13 +42,12 @@ typedef enum {
 @property (nonatomic, strong) SRWebSocket *webSocket;
 
 // For messages that haven't been sent (because the socket was closed).
-@property (nonatomic, strong, readonly) NSMutableArray *sendQueue;
+@property (nonatomic, strong) NSMutableArray *sendQueue;
 
 @property (nonatomic, assign) FCTWebSocketReadyState wsReadyState;
 
 @property (nonatomic, strong) RACSubject *messageSubject;
 @property (nonatomic, strong) RACSubject *openedSubject;
-
 
 @end
 
@@ -82,21 +81,19 @@ typedef enum {
 }
 
 - (void)prepare {
-    _sendQueue = [NSMutableArray array];
-    _messageSubject = [RACSubject subject];
-    _openedSubject = [RACSubject subject];
+    self.sendQueue = [NSMutableArray array];
+    self.messageSubject = [RACSubject subject];
+    self.openedSubject = [RACSubject subject];
     
     self.wsReadyState = FCTWebSocketReadyStateClosed;
     self.webSocket = nil;
 }
 
 - (RACSignal *)messageSignal {
-    NSParameterAssert(self.messageSubject);
     return self.messageSubject;
 }
 
 - (RACSignal *)openedSignal {
-    NSParameterAssert(self.openedSubject);
     return [self.openedSubject distinctUntilChanged];
 }
 

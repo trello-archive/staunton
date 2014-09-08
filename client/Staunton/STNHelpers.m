@@ -24,17 +24,21 @@ CGPoint CGPointSubtract(CGPoint a, CGPoint b) {
 
 - (RACSignal *)animated {
     RACSubject *subject = [RACReplaySubject replaySubjectWithCapacity:1];
-    
+
     [self subscribeNext:^(id x) {
-        [UIView animateWithDuration:0.25 animations:^{
-            [subject sendNext:x];
-        }];
+        [UIView animateWithDuration:0.25
+                              delay:0
+                            options:UIViewAnimationOptionBeginFromCurrentState
+                         animations:^{
+                             [subject sendNext:x];
+                         }
+                         completion:nil];
     } error:^(NSError *error) {
         [subject sendError:error];
     } completed:^{
         [subject sendCompleted];
     }];
-    
+
     return subject;
 }
 
