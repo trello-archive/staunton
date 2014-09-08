@@ -74,7 +74,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     label.layer.masksToBounds = YES;
     label.textAlignment = NSTextAlignmentCenter;
     self.kingView = label;
-    [self.view addSubview:self.kingView];
+    [self.view insertSubview:self.kingView belowSubview:self.myView];
     RAC(self.kingView, center) = [[self relativeToAbsolute:RACObserve(self.socket, kingPosition)] animated];
 }
 
@@ -108,6 +108,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     UIImageView *gravatarView = makeGravatarView(self.gravatarSize, self.socket.email);
 
     UIView *view = [[UIView alloc] initWithFrame:gravatarView.frame];
+    view.center = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
     [view addSubview:gravatarView];
 
     UILabel *scoreLabel = [self scoreLabelWithFrame:CGRectMake(0, 0, view.bounds.size.width, 20)];
@@ -226,7 +227,7 @@ static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
             return;
         }
         gravatarView = makeGravatarView(self.gravatarSize, email);
-        [self.view addSubview:gravatarView];
+        [self.view insertSubview:gravatarView belowSubview:self.myView];
 
         RACSignal *positionSignal = [[[diffs takeUntil:removals] map:^(STNDiff *diff) {
             return [NSValue valueWithCGPoint:diff.point];

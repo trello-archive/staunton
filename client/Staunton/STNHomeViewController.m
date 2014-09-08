@@ -23,10 +23,6 @@
 
 @implementation STNHomeViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-}
-
 - (void)viewWillAppearHide:(BOOL)animated {
     [super viewWillAppear:animated];
     self.countLabel = [[UILabel alloc] init];
