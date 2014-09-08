@@ -10,8 +10,13 @@
 
 @end
 
-static UIImageView *makeGravatarView(CGFloat size) {
+static UIImageView *makeGravatarView(CGFloat size, NSString *email) {
     UIImageView *view = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, size, size)];
+    [view setImageWithGravatarEmailAddress:email
+                          placeholderImage:nil
+                          defaultImageType:KHGravatarDefaultImageIdenticon
+                              forceDefault:NO
+                                    rating:KHGravatarRatingR];
     view.layer.cornerRadius = 0;
     view.layer.masksToBounds = NO;
     view.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -84,15 +89,13 @@ static UIImageView *makeGravatarView(CGFloat size) {
 }
 
 - (void)prepareMyView {
-    UIImageView *gravatarView = makeGravatarView(self.gravatarSize);
+    UIImageView *gravatarView = makeGravatarView(self.gravatarSize, self.socket.email);
 
     UILongPressGestureRecognizer *recognizer = [self addRecognizer:gravatarView];
     RACSignal *dragSignal = [self signalForRecognizer:recognizer];
     RACSignal *isDragging = [self isDraggingSignal:dragSignal];
 
-    [gravatarView setImageWithGravatarEmailAddress:self.socket.email];
-
-    gravatarView.layer.borderColor = UIColor.whiteColor.CGColor;
+    gravatarView.layer.borderColor = UIColor.blackColor.CGColor;
     gravatarView.layer.borderWidth = 2;
 
     RAC(gravatarView.layer, shadowOffset) = [RACSignal if:isDragging
@@ -197,8 +200,7 @@ static UIImageView *makeGravatarView(CGFloat size) {
             NSLog(@"dropping insertion of known email!");
             return;
         }
-        gravatarView = makeGravatarView(self.gravatarSize);
-        [gravatarView setImageWithGravatarEmailAddress:email];
+        gravatarView = makeGravatarView(self.gravatarSize, email);
         [self.view addSubview:gravatarView];
 
         RACSignal *positionSignal = [[diffs takeUntil:removals] map:^(STNDiff *diff) {
