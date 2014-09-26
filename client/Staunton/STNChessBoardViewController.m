@@ -74,7 +74,9 @@ static CGFloat distanceBetween(CGPoint a, CGPoint b) {
     UILabel *scoreLabel = [STNViewFactory makeScoreLabelWithFrame:frame];
 #warning Exercise 1
     // Let's make this dynamically update!
-    scoreLabel.text = @"???";
+    RAC(scoreLabel, text) = [RACObserve(self.socket, score) map:^id(NSNumber *score) {
+        return [NSString stringWithFormat:@"%0.1f", [score doubleValue]];
+    }];
     return scoreLabel;
 }
 
@@ -102,14 +104,34 @@ static CGFloat distanceBetween(CGPoint a, CGPoint b) {
     RAC(gravatarView.layer, shadowRadius) = [RACSignal if:isDragging
                                              then:[RACSignal return:@5]
                                              else:[RACSignal return:@1]];
-
+    RAC(gravatarView, borderColor) = [RACObserve(self.socket, connected) map:^id(NSNumber *connectedValue) {
+        if (connectedValue.boolValue) {
+            return [UIColor blackColor];
+        } else {
+            return [UIColor redColor];
+        }
+    }];
+    
+    RACSignal *dragSignalValid = [dragSignal map:^RACSignal*(RACSignal *drag){
+        return [drag filter:^BOOL(NSValue *center){
+            if (!center) {
+                return false;
+            }
+            
+            CGPoint relative = [self absoluteToRelative:center.CGPointValue];
+            return (relative.x > 0 && relative.x < 1 && relative.y > 0 && relative.y < 1);
+        }];
+    }];
+    
     @weakify(self);
-    [dragSignal subscribeNext:^(RACSignal *drag) {
-        [drag subscribeLast:^(NSValue *center) {
+    [dragSignalValid subscribeNext:^(RACSignal *drag) {
+        [[drag skip:1] subscribeNext:^(NSValue *center) {
             @strongify(self);
             if (center) {
                 CGPoint relative = [self absoluteToRelative:center.CGPointValue];
-                [self.socket sendMessage:@{@"x": @(relative.x), @"y": @(relative.y)}];
+                //if (distanceBetween(relative, last) > 0.5) {
+                    [self.socket sendMessage:@{@"x": @(relative.x), @"y": @(relative.y)}];
+                //}
             }
         }];
     }];
@@ -121,11 +143,19 @@ static CGFloat distanceBetween(CGPoint a, CGPoint b) {
 #warning Exercise 3
     // Alright, so we know that we get more points the closer we are to the king. But...
     // how close are we to the king? Let's make this label update with our distance!
-    distanceLabel.text = @"";
-
+    distanceLabel.text = @"99";
+    RACSignal *distanceSignal = [RACSignal combineLatest:@[RACObserve(view, center),
+                                                          [self relativeToAbsolute:RACObserve(self.socket, kingPosition)]]
+                                                 reduce:^(NSValue *myCenter, NSValue *kingCenter){
+                                                     return @(distanceBetween(myCenter.CGPointValue, kingCenter.CGPointValue));
+                                                 }];
+    
+    RAC(distanceLabel, text) = [distanceSignal map:^id(NSNumber *distance) {
+        return [NSString stringWithFormat:@"%0.1f", [distance doubleValue]];
+    }];
+    
 #warning Exercise 5 (mad extra credit)
-    // This shouldn't let you drag outside the chessboard!
-    RAC(view, center) = [dragSignal switchToLatest];
+    RAC(view, center) = [dragSignalValid switchToLatest];
 
     self.myView = view;
     [self.view addSubview:self.myView];

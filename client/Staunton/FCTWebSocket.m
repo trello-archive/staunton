@@ -11,7 +11,7 @@
 #import "FCTWebSocket.h"
 #import "STNConfig.h"
 
-static const NSUInteger FCT_DEBUG_WEB_SOCKETS = 0;
+static const NSUInteger FCT_DEBUG_WEB_SOCKETS = 1;
 
 static void FCTWSLog(NSString *format, ...) {
     if (FCT_DEBUG_WEB_SOCKETS) {
