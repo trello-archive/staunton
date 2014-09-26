@@ -123,6 +123,9 @@ static CGFloat distanceBetween(CGPoint a, CGPoint b) {
     // how close are we to the king? Let's make this label update with our distance!
     distanceLabel.text = @"";
 
+#warning Exercise 4
+    // See Ian.
+
 #warning Exercise 5 (mad extra credit)
     // This shouldn't let you drag outside the chessboard!
     RAC(view, center) = [dragSignal switchToLatest];
