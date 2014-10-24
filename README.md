@@ -4,7 +4,7 @@
 
 Dear Internet,
 
-Please come to the Flatiron iOS meetup [this Monday (2014 September 8th) at 7 PM at the Flatiron School at 11 Broadway in NYC](http://www.meetup.com/iOS-Devs-NYC/events/203818322/) where [Hao Lian](http://hao.codes) and [Ian Henry](https://ianthehenry.com) will talk about ReactiveCocoa.
+This is a repository for a presentation [Hao Lian](http://hao.codes) and [Ian Henry](https://ianthehenry.com) like to give about ReactiveCocoa and, more importantly, **reactive programming**.
 
 First, we'll just talk at you:
 
