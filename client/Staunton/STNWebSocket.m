@@ -16,7 +16,7 @@
 @property (nonatomic, assign, readwrite) BOOL connected;
 @property (nonatomic, assign, readwrite) CGPoint kingPosition;
 @property (nonatomic, assign, readwrite) double score;
-@property (nonatomic, strong, readwrite) NSOrderedSet *scores;
+@property (nonatomic, copy, readwrite) NSOrderedSet *scores;
 @property (nonatomic, strong) RACSubject *playerDiffsSubject;
 
 @property (nonatomic, strong) NSSet *allEmails;
