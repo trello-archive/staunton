@@ -31,7 +31,7 @@ static CGFloat distanceBetween(CGPoint a, CGPoint b) {
 }
 
 - (CGFloat)gravatarSize {
-    return self.view.bounds.size.width * 0.1;
+    return self.view.bounds.size.width * 0.15;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
