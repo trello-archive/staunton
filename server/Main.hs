@@ -1,9 +1,7 @@
 {-# LANGUAGE OverloadedStrings, NoImplicitPrelude, NamedFieldPuns #-}
 
 import           BasePrelude hiding ((\\), finally, read)
-import           Control.Concurrent (MVar)
 import qualified Control.Concurrent as C
-import           Control.Concurrent.Chan (Chan)
 import qualified Control.Concurrent.Chan as Ch
 import           Control.Concurrent.Suspend (sDelay)
 import           Control.Concurrent.Timer (repeatedTimer, stopTimer, TimerIO)
@@ -82,14 +80,13 @@ heartbeat wait db =
     heartbeatFilterM =
       filterM $ \(player, (_, lastPongTime, conn)) -> do
         now <- getUnixTime
-        case (diffUnixTime now lastPongTime > delta) of
-         True -> do
-           putStrLn ("+ GCing " <> show player)
-           WS.sendClose conn ("pong better" :: Text)
-           return False
-         False -> do
-           ping conn
-           return True
+        if diffUnixTime now lastPongTime > delta then do
+          putStrLn ("+ GCing " <> show player)
+          WS.sendClose conn ("pong better" :: Text)
+          return False
+        else do
+          ping conn
+          return True
 
 broadcast :: (A.ToJSON a) => DB -> a -> IO ()
 broadcast db obj =
@@ -118,9 +115,9 @@ scoring hill db scores = do
     scores' =
       M.mapWithKey (\player (loc, _, _) -> score player + score' loc) db
     score player =
-      maybe 0 id (M.lookup player scores)
+      fromMaybe 0 (M.lookup player scores)
     score' loc =
-      if distance loc > 0.01 then 1 / (distance loc) else 100
+      if distance loc > 0.01 then 1 / distance loc else 100
     distance loc =
       let (x0, y0) = loc
           (x1, y1) = hill in
@@ -135,7 +132,7 @@ dataflow onConnect pending = do
   conn <- WS.acceptRequest pending
   initial <- WS.receiveData conn
   case A.decode initial of
-   Nothing -> do
+   Nothing ->
      putStrLn ("Invalid registration: " <> show initial)
    Just registration -> do
      (onMove, onPong, onDisconnect) <- onConnect registration conn
@@ -144,7 +141,7 @@ dataflow onConnect pending = do
        case A.decode message of
         Just move ->
           lift $ onMove move
-        Nothing -> do
+        Nothing ->
           case A.decode message of
            Just pong ->
              lift $ onPong pong
@@ -214,7 +211,7 @@ mainWithState :: MVar DB ->
                  IO ()
 mainWithState state didConnect didMove = do
   timers <- makeTimers state didConnect didMove
-  (`finally` (forM_ timers stopTimer)) server
+  finally server (forM_ timers stopTimer)
   where
     server =
       runServer (dataflow application)
@@ -231,7 +228,7 @@ mainWithState state didConnect didMove = do
         renew = modify state $ \db -> do
           now <- getUnixTime
           return (M.alter (drug now) player db)
-        onConnect = do
+        onConnect =
           read state >>= \db -> do
             case (player, M.lookup player db) of
              (Player email, Just _) -> error ("This email address is already taken: " <> T.unpack email)
@@ -249,7 +246,7 @@ mainWithState state didConnect didMove = do
           let db' = M.delete player db
           Ch.writeChan didMove (player, conn)
           return db'
-        onPong _ = do
+        onPong _ =
           void renew
 
 runServer :: (WS.PendingConnection -> IO ()) -> IO ()
@@ -268,13 +265,13 @@ runServer server = do
       return ()
 
     parseExceptions :: ParseException -> IO ()
-    parseExceptions _ = do
+    parseExceptions _ =
       throw WS.ConnectionClosed
 
 main :: IO ()
 main = do
   hSetBuffering stdout LineBuffering
-  state <- C.newMVar (M.empty)
+  state <- C.newMVar M.empty
   didConnect <- Ch.newChan
   didMove <- Ch.newChan
   mainWithState state didConnect didMove
